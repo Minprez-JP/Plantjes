@@ -64,7 +64,7 @@ Import it in the GitHub UI under **Settings → Rules → Rulesets → New rules
 Import a ruleset**, or with the GitHub CLI:
 
 ```sh
-gh api --method POST repos/Minprez-JP/flowertracker/rulesets \
+gh api --method POST repos/Minprez-JP/Plantjes/rulesets \
   --input .github/rulesets/main-branch.json
 ```
 
@@ -88,7 +88,8 @@ before importing.
    npm test
    npm run build
    ```
-3. Update `package.json` and the release notes if the version changes.
+3. Update `package.json` and the release notes in
+   `.github/release-notes/<version>.md` if the version changes.
 4. Tag the release from `main` and publish the GitHub release.
 5. Verify the built site over HTTPS and confirm the production CSP header/meta
    tag and the host response headers described in [SECURITY.md](./SECURITY.md).

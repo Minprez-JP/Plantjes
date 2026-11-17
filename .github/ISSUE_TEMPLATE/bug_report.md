@@ -9,7 +9,7 @@ assignees: ''
 
 > **Security issue?** Do not disclose vulnerabilities in a public issue. Follow
 > the private reporting process in
-> [SECURITY.md](https://github.com/Minprez-JP/flowertracker/security/policy).
+> [SECURITY.md](https://github.com/Minprez-JP/Plantjes/security/policy).
 >
 > Please redact personal information. Do not attach real plant-journal backups
 > or private photos.
