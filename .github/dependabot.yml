@@ -1,0 +1,32 @@
+version: 2
+
+updates:
+  # Keep workflow actions current. Pinned action SHAs are updated in place.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+
+  # Keep npm dependencies current. Minor and patch updates are grouped so the
+  # lockfile review stays focused; major upgrades arrive separately.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: deps
+    groups:
+      npm-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
