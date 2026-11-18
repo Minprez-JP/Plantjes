@@ -4,6 +4,9 @@
 no accounts, and no telemetry. This policy describes the security model, how to
 report a problem, and the controls the project maintains.
 
+The automated security testing programme, alert triage process and requirement
+traceability are documented in [SECURITY_TESTING.md](./SECURITY_TESTING.md).
+
 ## Supported versions
 
 This is a personal, best-effort project. No version is formally supported, and
@@ -145,4 +148,4 @@ Notes:
 - [ ] No new third-party runtime requests; assets are self-hosted.
 - [ ] New async work catches failures and surfaces a user-visible state.
 - [ ] New persistence paths cannot leave a stale or unhandled rejected promise.
-- [ ] `npm audit --audit-level=high`, `npm test`, and `npm run build` pass in CI.
+- [ ] `npm audit --audit-level=high --omit=dev`, `npm test`, and `npm run build` pass in CI; dev-only advisories are reported by the non-blocking audit step.
