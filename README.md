@@ -28,6 +28,10 @@ Watering and feeding reminders are calculated from each interval and the last ti
 - Import replaces the current journal instead of merging two collections.
 - `.plantjes` backups are unencrypted JSON. Store them somewhere you trust, and do not attach them to public issues.
 
+## Mobile APK release
+
+This repository builds both the desktop web app and the local-run Android APK from the protected `main` branch. Shared React/Vite code and the Capacitor `android/` shell live in the same tree; mobile work uses short-lived topic branches merged into `main`. See [MOBILE_RELEASE.md](./MOBILE_RELEASE.md) for the scope, requirements, process, task register, timeline, risk log and migration log, and for the link to project board #3.
+
 ## Run locally
 
 Use Node.js 26, the version CI runs, with npm. Install the exact dependencies from the committed lockfile and start the development server:
