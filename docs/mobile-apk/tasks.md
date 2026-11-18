@@ -4,9 +4,9 @@ Source of truth for live status: [project board #3](https://github.com/users/Min
 
 | Issue | Task | Phase | Milestone | Start | Target | Size | Priority | Dependencies | Board status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [#30](https://github.com/Minprez-JP/Plantjes/issues/30) | Publish a local-run Android APK for Plantjes (epic) | M0–M4 | Mobile M0 | 2026-11-18 | 2027-01-13 | — | High | all child issues | Backlog |
-| [#31](https://github.com/Minprez-JP/Plantjes/issues/31) | Create protected `Mobile` branch and synced baseline | M0 | Mobile M0 | 2026-11-18 | 2026-11-20 | S | High | none | In progress |
-| [#32](https://github.com/Minprez-JP/Plantjes/issues/32) | Publish mobile scope, requirements, process, tasks and timeline | M0 | Mobile M0 | 2026-11-18 | 2026-11-25 | M | High | #31 | In progress |
+| [#30](https://github.com/Minprez-JP/Plantjes/issues/30) | Publish a local-run Android APK for Plantjes (epic) | M0–M4 | Mobile M0 | 2026-11-18 | 2027-01-13 | — | High | all child issues | In progress |
+| [#31](https://github.com/Minprez-JP/Plantjes/issues/31) | Create protected `Mobile` branch and synced baseline | M0 | Mobile M0 | 2026-11-18 | 2026-11-20 | S | High | none | Done |
+| [#32](https://github.com/Minprez-JP/Plantjes/issues/32) | Publish mobile scope, requirements, process, tasks and timeline | M0 | Mobile M0 | 2026-11-18 | 2026-11-25 | M | High | #31 | Done |
 | [#33](https://github.com/Minprez-JP/Plantjes/issues/33) | Run packaging feasibility gate and record the decision | M1 | Mobile M1 | 2026-11-26 | 2026-12-02 | L | High | #32 | Backlog |
 | [#34](https://github.com/Minprez-JP/Plantjes/issues/34) | Add Capacitor runtime and Android platform scaffold | M1 | Mobile M1 | 2026-11-26 | 2026-12-02 | L | High | #33 go decision | Backlog |
 | [#35](https://github.com/Minprez-JP/Plantjes/issues/35) | Adapt Vite, CSP and asset loading for Android WebView | M2 | Mobile M2 | 2026-12-03 | 2026-12-10 | M | High | #34 | Backlog |
@@ -23,7 +23,7 @@ Source of truth for live status: [project board #3](https://github.com/users/Min
 
 ## Work breakdown by phase
 
-### M0 — Discovery and protected branch
+### M0 — Discovery and protected branch (complete 2026-11-18)
 
 - Create and protect `Mobile` from current `main` (#31).
 - Publish the canonical plan documents and link them from the repo, epic and board (#32).
