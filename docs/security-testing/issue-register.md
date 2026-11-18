@@ -28,5 +28,5 @@ Epic: [#9](https://github.com/Minprez-JP/Plantjes/issues/9) — label `security`
 | Source | Status | Related task |
 | --- | --- | --- |
 | Dependabot alerts | Enabled; 0 open, 0 historical | #15, #25 |
-| Code scanning (CodeQL default setup) | Active; 2 original `js/xss-through-dom` alerts triaged as false positives and suppressed in source; PR-only alert #3 dismissed with rationale | #13, #24 |
+| Code scanning (CodeQL default setup) | Active; 2 original `js/xss-through-dom` alerts triaged as false positives and dismissed in GitHub with rationale; PR-only alerts #3-#5 dismissed with the same rationale | #13, #24 |
 | Secret scanning | Enabled with push protection; alerts endpoint reachable; non-provider patterns/validity checks remained disabled via API; gitleaks CI still open | #16, #25 |
