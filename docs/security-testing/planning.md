@@ -72,12 +72,14 @@ Total: roughly **11–14 working days**, with Phase 1 and Phase 2 parallelisable
 
 - **Dependabot:** security updates enabled; 0 open and 0 historical Dependabot alerts.
 - **Code scanning:** CodeQL default setup active (`dynamic/github-code-scanning/codeql`) for JavaScript/TypeScript and Actions. Two open `js/xss-through-dom` alerts (#1, #2), both traced from `event.target.files?.[0]` through `URL.createObjectURL` into React `<img src>`. Likely a CodeQL false positive given React escaping and opaque `blob:` URLs, but it requires documented triage — tracked in #24.
-- **Secret scanning:** disabled. The alerts endpoint returns HTTP 404 and `security_and_analysis` shows secret scanning, push protection, non-provider patterns and validity checks all disabled. Confirmed in #16.
+- **Secret scanning:** initially disabled (404); enabled during implementation with push protection. Non-provider patterns and validity checks remained disabled via API for this public repository. CI gitleaks remains tracked in #16.
 - **New tasks:** #24 (triage/resolve the two CodeQL alerts, Phase 1) and #25 (recurring security-alert triage workflow, Phase 3). Existing #13 and #16 were updated with the current state instead of duplicating them.
 
 ## 8. Current status
 
-- Scope, requirements, planning and issue register written to `C:\Users\marck\.opencode\plan`.
+- Scope, requirements, planning and issue register are now version-controlled under `docs/security-testing/` and indexed by `SECURITY_TESTING.md`.
 - `security` label and four phase milestones created in `Minprez-JP/Plantjes`.
-- Epic #9 and child issues #10–#25 created, labelled, milestoned and added to the `devSecops` board with Status **Todo**.
-- No application source files were modified; implementation requires switching out of Plan mode.
+- Epic #9 and child issues #10–#25 created, labelled, milestoned and added to the `devSecops` board.
+- PR #26 (merged): `useObjectUrl` blob-scheme guard, dated CodeQL suppressions, regression tests and runtime-only blocking audit gate resolve #24.
+- PR #27 (open): publishes this guide and links it from `SECURITY.md`, `DEVELOPER.md`, the project README and issues #9/#10/#23/#25.
+- GitHub secret scanning, push protection and the secret-scanning alerts endpoint are enabled; gitleaks CI remains open in #16.

@@ -40,7 +40,7 @@ npm audit --audit-level=high
 | Tests and build | `npm test`, `npm run build` | Yes |
 | SAST | CodeQL default setup (`dynamic/github-code-scanning/codeql`), JavaScript/TypeScript + Actions | Findings triaged via Security tab |
 | Dependency updates | Dependabot: npm (minor/patch grouped), GitHub Actions (weekly) | PR-based review |
-| Secret scanning | Currently disabled; enablement tracked in [#16](https://github.com/Minprez-JP/Plantjes/issues/16) | — |
+| Secret scanning | Enabled with push protection (provider patterns); alerts endpoint reachable. Non-provider patterns and validity checks remained disabled via API for this public repository. CI gitleaks check still tracked in [#16](https://github.com/Minprez-JP/Plantjes/issues/16) | — |
 
 ## Requirement traceability
 
@@ -49,7 +49,7 @@ npm audit --audit-level=high
 | FR-01 SAST | [#13](https://github.com/Minprez-JP/Plantjes/issues/13), [#24](https://github.com/Minprez-JP/Plantjes/issues/24) | CodeQL default setup + alert triage |
 | FR-02 Security lint rules | [#14](https://github.com/Minprez-JP/Plantjes/issues/14) | Planned |
 | FR-03 SCA/SBOM/licences | [#15](https://github.com/Minprez-JP/Plantjes/issues/15) | `npm audit` gate active; SBOM/licences planned |
-| FR-04 Secret scanning | [#16](https://github.com/Minprez-JP/Plantjes/issues/16) | Disabled; task open |
+| FR-04 Secret scanning | [#16](https://github.com/Minprez-JP/Plantjes/issues/16) | GitHub secret scanning + push protection enabled; CI gitleaks still open |
 | FR-05 CSP/asset integrity | [#17](https://github.com/Minprez-JP/Plantjes/issues/17) | Planned |
 | FR-06 Fuzz/import tests | [#18](https://github.com/Minprez-JP/Plantjes/issues/18) | Planned |
 | FR-07 Upload regression | [#19](https://github.com/Minprez-JP/Plantjes/issues/19) | Planned |
