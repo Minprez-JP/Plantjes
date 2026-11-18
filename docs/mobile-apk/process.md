@@ -14,6 +14,7 @@ main (protected)
 - Android-only runtime code lives in `android/` and in the Capacitor config/scripts; desktop continues to build from the same shared source.
 - `archive/v2-mobile` and `archive/mobile-branch` are historical only; do not use them as a merge base.
 - Topic branches are short-lived, lowercase and descriptive, using hyphens or slashes: `feature/mobile-camera`, `mobile/csp-fix`, `fix/android-permissions`.
+- `release/mobile` is the single short-lived integration exception: cut from `main` for the M0/M1 feasibility work and go/no-go decision, kept in sync with `main`, merged into `main` via PR on a go, and retired without merging on a no-go.
 
 ## Protection rules
 
