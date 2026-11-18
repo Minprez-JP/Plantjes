@@ -18,7 +18,7 @@ and approved by the maintainer.
 
 ## Development and pull requests
 
-Use Node.js 22, the version CI runs, with npm. From a clean checkout:
+Use Node.js 26, the version CI runs, with npm. From a clean checkout:
 
 ```sh
 npm ci

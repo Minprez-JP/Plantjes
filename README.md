@@ -30,7 +30,7 @@ Watering and feeding reminders are calculated from each interval and the last ti
 
 ## Run locally
 
-Use Node.js 22, the version CI runs, with npm. Install the exact dependencies from the committed lockfile and start the development server:
+Use Node.js 26, the version CI runs, with npm. Install the exact dependencies from the committed lockfile and start the development server:
 
 ```sh
 npm ci
