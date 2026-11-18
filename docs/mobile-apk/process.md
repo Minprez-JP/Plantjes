@@ -12,7 +12,7 @@ main (protected)
 
 - `main` is the single source of truth for shared application code **and** platform folders. There is no second long-lived mobile branch and no `main` → `Mobile` sync.
 - Android-only runtime code lives in `android/` and in the Capacitor config/scripts; desktop continues to build from the same shared source.
-- `v2/mobile` and `archive/mobile-branch` are historical only; do not use them as a merge base.
+- `archive/v2-mobile` and `archive/mobile-branch` are historical only; do not use them as a merge base.
 - Topic branches are short-lived, lowercase and descriptive, using hyphens or slashes: `feature/mobile-camera`, `mobile/csp-fix`, `fix/android-permissions`.
 
 ## Protection rules
@@ -24,6 +24,8 @@ Configured on `main` via the repository ruleset **Protect main**:
 - Strict status checks: the topic branch must be up to date with `main` before merge.
 - Force pushes and branch deletion are disabled.
 - Administrators are subject to the rules; zero approvals are required because there is a single maintainer.
+
+`archive/*` branches are locked by the repository ruleset **Lock archive branches**: pushes, force pushes and deletion are blocked for everyone with no bypass. To work on archived history, fork the repository and work in the fork.
 
 ## Standard change flow
 
