@@ -143,6 +143,10 @@ export function PlantDialog({
       : photoUrl
         ? 'Saved on this device.'
         : 'No photo saved yet.'
+  const photoPreview = (
+    // codeql[js/xss-through-dom] False positive: React escapes JSX attributes and useObjectUrl only returns opaque same-origin blob: URLs, which image sources cannot execute. See issue #24. Review by 2027-02-18.
+    <img src={photoUrl || FALLBACK_PLANT_IMAGE} alt={photoUrl ? `Photo of ${values.name.trim() || 'this plant'}` : ''} />
+  )
   const feedingEnabled = feedInterval.trim() !== ''
   const message = validationError?.error || error
   const messageTab = validationError
@@ -702,8 +706,7 @@ export function PlantDialog({
           >
             <div className="form-grid">
               <div className="photo-preview field-wide">
-                {/* codeql[js/xss-through-dom] False positive: React escapes JSX attributes and useObjectUrl only returns opaque same-origin blob: URLs, which image sources cannot execute. See issue #24. Review by 2027-02-18. */}
-                <img src={photoUrl || FALLBACK_PLANT_IMAGE} alt={photoUrl ? `Photo of ${values.name.trim() || 'this plant'}` : ''} />
+                {photoPreview}
                 <span className="photo-preview-note">{photoNote}</span>
               </div>
               <label className="field field-wide">
