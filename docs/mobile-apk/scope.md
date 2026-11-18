@@ -34,7 +34,7 @@ Prove and, if viable, deliver a locally installable Android APK for Plantjes tha
 
 ## Assumptions
 
-- Node.js 22 and the committed lockfile are used for all web builds.
+- Node.js 26 and the committed lockfile are used for all web builds.
 - A supported Android SDK, JDK and emulator image are available before M1 ends.
 - One maintainer performs implementation and review; branch protection therefore requires a PR and passing CI but zero approvals.
 - The existing CSP and no-third-party-request property are non-negotiable and may not be relaxed for packaging convenience.
