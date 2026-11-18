@@ -81,5 +81,5 @@ Total: roughly **11–14 working days**, with Phase 1 and Phase 2 parallelisable
 - `security` label and four phase milestones created in `Minprez-JP/Plantjes`.
 - Epic #9 and child issues #10–#25 created, labelled, milestoned and added to the `devSecops` board.
 - PR #26 (merged): `useObjectUrl` blob-scheme guard, dated CodeQL suppressions, regression tests and runtime-only blocking audit gate resolve #24.
-- PR #27 (open): publishes this guide and links it from `SECURITY.md`, `DEVELOPER.md`, the project README and issues #9/#10/#23/#25.
+- PR #27 (merged): publishes this guide and links it from `SECURITY.md`, `DEVELOPER.md`, the project README and issues #9/#10/#23/#25.
 - GitHub secret scanning, push protection and the secret-scanning alerts endpoint are enabled; gitleaks CI remains open in #16.
