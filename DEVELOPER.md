@@ -272,7 +272,7 @@ minimal and do not add remote scripts, fonts, or CDNs.
 
 ## Development commands
 
-For a clean checkout, use Node.js 22 and install from the committed lockfile with
+For a clean checkout, use Node.js 26 and install from the committed lockfile with
 `npm ci` before running the checks.
 
 - `npm ci` installs the exact dependency graph from `package-lock.json`, matching

@@ -50,7 +50,7 @@
 ## 6. Assumptions and constraints
 
 - This is a personal, best-effort project; controls should be pragmatic and low-maintenance.
-- CI runs on `ubuntu-latest` with Node 22; all test tooling must work there.
+- CI runs on `ubuntu-latest` with Node 26; all test tooling must work there.
 - The existing CSP is injected via a Vite build plugin; `frame-ancestors` remains a host-header responsibility.
 - No server means DAST is performed against a locally served production build (`vite preview`), not a deployed environment.
 - Security tooling must not introduce runtime third-party assets or break the strict CSP.
