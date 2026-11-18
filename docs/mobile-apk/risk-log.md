@@ -14,7 +14,7 @@ Owner for every item: maintainer unless stated otherwise. Status is reviewed wee
 | R-08 | Backup import/export or data-clearing causes user-perceived data loss | M / H | Verify round trip on device; document export before clear/uninstall/rollback; reject malformed files visibly | M2 and M4 | 2027-01-13 | #36, #44 |
 | R-09 | Capacitor or Android tooling upgrades break the pinned build | M / M | Pin dependencies and tooling, commit platform project, test from clean clone before release | Dependency update PR | 2026-12-30 | #34, #40, #41 |
 | R-10 | Part-time schedule slips past 2027-01-13 | H / M | Apply timeline slip rules; reduce UX polish first; never ship before security/data gates | Weekly board review | Weekly | #32, #42, #43 |
-| R-11 | Legacy `v2/mobile` or `archive/mobile-branch` is mistaken for the active branch | M / M | State `main` as canonical in `MOBILE_RELEASE.md`, docs and board; keep both old branches history-only | Branch setup and docs review | 2026-11-25 | #31, #32 |
+| R-11 | Legacy `archive/v2-mobile` or `archive/mobile-branch` is mistaken for the active branch | M / M | State `main` as canonical in `MOBILE_RELEASE.md`, docs and board; keep both archived branches read-only and delete-protected | Branch setup and docs review | 2026-11-25 | #31, #32 |
 
 ## Decision record template
 

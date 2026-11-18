@@ -9,7 +9,7 @@ This is the canonical entry point for the local-run Android APK work. The shared
 - Migration: mobile plan docs moved from the protected `Mobile` branch to `main` on 2026-11-18; the old branch is retained as `archive/mobile-branch` for history and link redirects
 - Epic: [#30 — Publish a local-run Android APK for Plantjes](https://github.com/Minprez-JP/Plantjes/issues/30)
 - Board: [Plantjes mobile development #3](https://github.com/users/Minprez-JP/projects/3)
-- Legacy branch: `v2/mobile` is retained for history but is **not** the active mobile baseline
+- Legacy branches: `archive/v2-mobile` and `archive/mobile-branch` are retained for history but are **not** active baselines. `archive/*` is read-only and delete-protected; fork the repository if you need to work on archived history.
 
 > No APK is published yet. `main` currently contains the scope, requirements, process, task register, timeline and risk record needed to make the go/no-go decision.
 
