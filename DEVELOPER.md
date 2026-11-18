@@ -2,7 +2,9 @@
 
 This guide describes how **Plantjes.** is put together and where to make changes.
 Contribution requirements and the account-approval policy are in
-[CONTRIBUTING.md](./CONTRIBUTING.md).
+[CONTRIBUTING.md](./CONTRIBUTING.md). Security testing tooling, alert triage and
+the requirement traceability matrix are in
+[SECURITY_TESTING.md](./SECURITY_TESTING.md).
 
 ## Project layout
 
