@@ -20,7 +20,7 @@ Epic: [#9](https://github.com/Minprez-JP/Plantjes/issues/9) — label `security`
 | [#21](https://github.com/Minprez-JP/Plantjes/issues/21) | SEC-12: Run OWASP ZAP baseline against the preview build | Phase 2 - Dynamic and Input Testing | FR-08, NFR-05 | Local `vite preview` scan |
 | [#22](https://github.com/Minprez-JP/Plantjes/issues/22) | SEC-13: Harden CI security gates and branch ruleset | Phase 3 - Governance and Handover | FR-10, NFR-06 | Required checks, pinned SHAs |
 | [#23](https://github.com/Minprez-JP/Plantjes/issues/23) | SEC-14: Publish SECURITY_TESTING.md and update the review checklist | Phase 3 - Governance and Handover | FR-12, NFR-03, NFR-07 | Publishing via PR #27; `npm run security:check` added |
-| [#24](https://github.com/Minprez-JP/Plantjes/issues/24) | SEC-15: Triage and resolve open CodeQL XSS alerts (#1, #2) | Phase 1 - Static and Supply Chain | FR-01, FR-02, FR-11, NFR-03 | Resolved by PR #26: blob guard, dated suppressions, regression tests, suppression log |
+| [#24](https://github.com/Minprez-JP/Plantjes/issues/24) | SEC-15: Triage and resolve open CodeQL XSS alerts (#1, #2) | Phase 1 - Static and Supply Chain | FR-01, FR-02, FR-11, NFR-03 | Resolved by PRs #26/#28: blob guard, tests, sink rationale; CodeQL alerts fixed, 0 open |
 | [#25](https://github.com/Minprez-JP/Plantjes/issues/25) | SEC-16: Establish recurring security-alert triage workflow | Phase 3 - Governance and Handover | FR-11, NFR-03, NFR-05 | Workflow documented via PR #27; monthly enablement check still to exercise |
 
 ## Security alert sources reviewed (2026-11-18)
@@ -28,5 +28,5 @@ Epic: [#9](https://github.com/Minprez-JP/Plantjes/issues/9) — label `security`
 | Source | Status | Related task |
 | --- | --- | --- |
 | Dependabot alerts | Enabled; 0 open, 0 historical | #15, #25 |
-| Code scanning (CodeQL default setup) | Active; 2 original `js/xss-through-dom` alerts triaged as false positives and dismissed in GitHub with rationale; PR-only alerts #3-#5 dismissed with the same rationale | #13, #24 |
+| Code scanning (CodeQL default setup) | Active; 2 original `js/xss-through-dom` alerts triaged as false positives and marked `fixed` after PRs #26/#28; PR-only alerts #3-#5 dismissed with the same rationale | #13, #24 |
 | Secret scanning | Enabled with push protection; alerts endpoint reachable; non-provider patterns/validity checks remained disabled via API; gitleaks CI still open | #16, #25 |
