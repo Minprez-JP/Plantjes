@@ -60,7 +60,7 @@ export const PlantCard = memo(function PlantCard({
   const feedDue = fertilizerDaysLeft !== null && fertilizerDaysLeft <= 0
   const image = storedImageUrl || FALLBACK_PLANT_IMAGE
   const plantPhoto = (
-    // codeql[js/xss-through-dom] False positive: React escapes JSX attributes and useObjectUrl only returns opaque same-origin blob: URLs, which image sources cannot execute. See issue #24. Review by 2027-02-18.
+    // False positive (see issue #24 and the SECURITY_TESTING.md suppression log): React escapes JSX attributes and useObjectUrl only returns opaque same-origin blob: URLs, which image sources cannot execute. Review by 2027-02-18.
     <img className="plant-photo-image" src={image} alt="" loading="lazy" decoding="async" />
   )
   const temperature = formatTemperatureRange(plant.minTemperature, plant.maxTemperature)
