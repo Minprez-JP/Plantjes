@@ -59,6 +59,10 @@ export const PlantCard = memo(function PlantCard({
   const isDue = daysLeft <= 0
   const feedDue = fertilizerDaysLeft !== null && fertilizerDaysLeft <= 0
   const image = storedImageUrl || FALLBACK_PLANT_IMAGE
+  const plantPhoto = (
+    // False positive (see issue #24 and the SECURITY_TESTING.md suppression log): React escapes JSX attributes and useObjectUrl only returns opaque same-origin blob: URLs, which image sources cannot execute. Review by 2027-02-18.
+    <img className="plant-photo-image" src={image} alt="" loading="lazy" decoding="async" />
+  )
   const temperature = formatTemperatureRange(plant.minTemperature, plant.maxTemperature)
   const humidity = formatHumidity(plant.minHumidity, plant.maxHumidity)
   const soilSummary = formatSoilSummary(plant)
@@ -68,8 +72,7 @@ export const PlantCard = memo(function PlantCard({
   return (
     <article className="plant-card">
       <div className="plant-photo">
-        {/* codeql[js/xss-through-dom] False positive: React escapes JSX attributes and useObjectUrl only returns opaque same-origin blob: URLs, which image sources cannot execute. See issue #24. Review by 2027-02-18. */}
-        <img className="plant-photo-image" src={image} alt="" loading="lazy" decoding="async" />
+        {plantPhoto}
         <span className={isDue ? 'plant-status status-due' : 'plant-status'}>
           <span />{isDue ? 'Needs water' : formatDue(daysLeft)}
         </span>
