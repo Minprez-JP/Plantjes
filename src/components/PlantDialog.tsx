@@ -702,10 +702,8 @@ export function PlantDialog({
           >
             <div className="form-grid">
               <div className="photo-preview field-wide">
-                <img
-                  src={photoUrl || FALLBACK_PLANT_IMAGE}
-                  alt={photoUrl ? `Photo of ${values.name.trim() || 'this plant'}` : ''}
-                />
+                {/* codeql[js/xss-through-dom] False positive: React escapes JSX attributes, and useObjectUrl only returns opaque same-origin blob: URLs, which <img src> cannot execute. See issue #24. Review by 2027-02-18. */}
+                <img src={photoUrl || FALLBACK_PLANT_IMAGE} alt={photoUrl ? `Photo of ${values.name.trim() || 'this plant'}` : ''} />
                 <span className="photo-preview-note">{photoNote}</span>
               </div>
               <label className="field field-wide">
