@@ -19,6 +19,15 @@ export function useObjectUrl(blob: Blob | undefined) {
       return
     }
 
+    // Defense in depth: createObjectURL always returns an opaque same-origin
+    // `blob:` URL. Reject anything else so a future refactor cannot feed a
+    // script-capable URL into an <img src> sink.
+    if (!objectUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(objectUrl)
+      setUrl('')
+      return
+    }
+
     setUrl(objectUrl)
     return () => URL.revokeObjectURL(objectUrl)
   }, [blob])
