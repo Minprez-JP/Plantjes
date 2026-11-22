@@ -8,9 +8,9 @@ Epic: [#9](https://github.com/Minprez-JP/Plantjes/issues/9) — label `security`
 | [#9](https://github.com/Minprez-JP/Plantjes/issues/9) | [SECURITY] Establish automated security testing for Plantjes (epic) | Phase 0 - Foundation | FR-01..FR-12 | Parent for all items below |
 | [#10](https://github.com/Minprez-JP/Plantjes/issues/10) | SEC-01: Publish security testing scope, threat alignment and acceptance criteria | Phase 0 - Foundation | FR-11, FR-12, NFR-03 | Publishing via PR #27 |
 | [#11](https://github.com/Minprez-JP/Plantjes/issues/11) | SEC-02: Configure devSecops board, security label and milestones | Phase 0 - Foundation | FR-11 | Verified 2026-11-22: `security` label on all 16 epic issues, four phase milestones assigned, all 17 board items have Status, and Labels/Milestone/Repository fields are populated; closed |
-| [#12](https://github.com/Minprez-JP/Plantjes/issues/12) | SEC-03: Define security metrics, SLA and quarterly review cadence | Phase 0 - Foundation | FR-11, NFR-03, NFR-05 | High/Critical 7d, Medium 30d |
-| [#13](https://github.com/Minprez-JP/Plantjes/issues/13) | SEC-04: Integrate CodeQL SAST with SARIF upload | Phase 1 - Static and Supply Chain | FR-01, NFR-06 | Updated 2026-11-18: default CodeQL setup already active; baseline triage in #24 |
-| [#14](https://github.com/Minprez-JP/Plantjes/issues/14) | SEC-05: Add security lint rules for dangerous browser sinks | Phase 1 - Static and Supply Chain | FR-02 | Blocks `innerHTML`, `eval`, etc. |
+| [#12](https://github.com/Minprez-JP/Plantjes/issues/12) | SEC-03: Define security metrics, SLA and quarterly review cadence | Phase 0 - Foundation | FR-11, NFR-03, NFR-05 | Metrics/SLA documented in `SECURITY_TESTING.md`; reports uploaded as `security-reports`; quarterly review in #70 |
+| [#13](https://github.com/Minprez-JP/Plantjes/issues/13) | SEC-04: Integrate CodeQL SAST with SARIF upload | Phase 1 - Static and Supply Chain | FR-01, NFR-06 | Committed `codeql.yml` with pinned SHAs replaces default setup; required checks remain #22 |
+| [#14](https://github.com/Minprez-JP/Plantjes/issues/14) | SEC-05: Add security lint rules for dangerous browser sinks | Phase 1 - Static and Supply Chain | FR-02 | Pinned flat config, four custom rules, negative/positive fixtures, JSON + SARIF evidence uploaded to code scanning |
 | [#15](https://github.com/Minprez-JP/Plantjes/issues/15) | SEC-06: Generate SBOM, licence report and harden dependency audit | Phase 1 - Static and Supply Chain | FR-03, NFR-04, NFR-05 | CycloneDX + licences + `npm audit` |
 | [#16](https://github.com/Minprez-JP/Plantjes/issues/16) | SEC-07: Enable GitHub secret scanning and CI gitleaks check | Phase 1 - Static and Supply Chain | FR-04 | GitHub secret scanning + push protection enabled 2026-11-18; CI gitleaks still open |
 | [#17](https://github.com/Minprez-JP/Plantjes/issues/17) | SEC-08: Add CSP and asset-integrity regression test on production build | Phase 2 - Dynamic and Input Testing | FR-05 | Exact CSP meta, no sourcemaps/remote assets |
@@ -22,6 +22,7 @@ Epic: [#9](https://github.com/Minprez-JP/Plantjes/issues/9) — label `security`
 | [#23](https://github.com/Minprez-JP/Plantjes/issues/23) | SEC-14: Publish SECURITY_TESTING.md and update the review checklist | Phase 3 - Governance and Handover | FR-12, NFR-03, NFR-07 | Publishing via PR #27; `npm run security:check` added |
 | [#24](https://github.com/Minprez-JP/Plantjes/issues/24) | SEC-15: Triage and resolve open CodeQL XSS alerts (#1, #2) | Phase 1 - Static and Supply Chain | FR-01, FR-02, FR-11, NFR-03 | Resolved by PRs #26/#28: blob guard, tests, sink rationale; CodeQL alerts fixed, 0 open |
 | [#25](https://github.com/Minprez-JP/Plantjes/issues/25) | SEC-16: Establish recurring security-alert triage workflow | Phase 3 - Governance and Handover | FR-11, NFR-03, NFR-05 | Workflow documented via PR #27; monthly enablement check still to exercise |
+| [#70](https://github.com/Minprez-JP/Plantjes/issues/70) | SEC-17: Quarterly security review | Phase 3 - Governance and Handover | FR-11, NFR-03, NFR-05 | First review due 2027-02-22; owner is the maintainer |
 
 ## Security alert sources reviewed (2026-11-18)
 

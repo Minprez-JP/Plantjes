@@ -9,7 +9,7 @@
 | 2 — Dynamic & Input Testing | Phase 2 - Dynamic and Input Testing | #17, #18, #19, #20, #21 | CSP/asset integrity, fuzz, upload, no-egress and ZAP evidence |
 | 3 — Governance & Handover | Phase 3 - Governance and Handover | #22, #23, #25 | Non-bypassable CI gates, maintainer runbook and recurring alert triage |
 
-Board: https://github.com/users/Minprez-JP/projects/2 — all 17 items are attached with **Status: Todo**.
+Board: https://github.com/users/Minprez-JP/projects/2 — items are attached with Status reflecting current progress; #10, #11, #23 and #24 are `Done`, #25 is `In Progress`, and the rest are `Todo`.
 Repository: https://github.com/Minprez-JP/Plantjes
 
 ## 2. Sequencing and dependencies
@@ -82,4 +82,7 @@ Total: roughly **11–14 working days**, with Phase 1 and Phase 2 parallelisable
 - Epic #9 and child issues #10–#25 created, labelled, milestoned and added to the `devSecops` board.
 - PR #26 (merged): `useObjectUrl` blob-scheme guard, dated CodeQL suppressions, regression tests and runtime-only blocking audit gate resolve #24.
 - PR #27 (merged): publishes this guide and links it from `SECURITY.md`, `DEVELOPER.md`, the project README and issues #9/#10/#23/#25.
+- #11 (closed): board label, milestones, attachment and fields verified on 2026-11-22.
+- #12, #13 and #14 implemented in the 2026-11-22 CI/security batch: metrics and SLA documented, committed pinned CodeQL workflow replaces default setup, and pinned ESLint security rules run with JSON/SARIF evidence.
+- #70 created as the recurring quarterly review item; first review due 2027-02-22.
 - GitHub secret scanning, push protection and the secret-scanning alerts endpoint are enabled; gitleaks CI remains open in #16.

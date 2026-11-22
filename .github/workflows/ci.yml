@@ -42,8 +42,42 @@ jobs:
       - name: Report dev-only advisories
         run: npm audit --audit-level=high || true
 
+      # This also runs the pinned security lint rules and fails on any finding.
+      - name: Generate security reports
+        run: npm run security:reports
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: security-reports
+          path: artifacts/security/
+          retention-days: 90
+          if-no-files-found: error
+
       - name: Test
         run: npm test
 
       - name: Build
         run: npm run build
+
+  upload-security-sarif:
+    name: Upload security lint SARIF
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Download security reports
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: security-reports
+          path: artifacts/security
+
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+        with:
+          sarif_file: artifacts/security/security-lint.sarif
+          category: security-lint
