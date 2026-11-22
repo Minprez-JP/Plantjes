@@ -7,7 +7,7 @@ Epic: [#9](https://github.com/Minprez-JP/Plantjes/issues/9) — label `security`
 | --- | --- | --- | --- | --- |
 | [#9](https://github.com/Minprez-JP/Plantjes/issues/9) | [SECURITY] Establish automated security testing for Plantjes (epic) | Phase 0 - Foundation | FR-01..FR-12 | Parent for all items below |
 | [#10](https://github.com/Minprez-JP/Plantjes/issues/10) | SEC-01: Publish security testing scope, threat alignment and acceptance criteria | Phase 0 - Foundation | FR-11, FR-12, NFR-03 | Publishing via PR #27 |
-| [#11](https://github.com/Minprez-JP/Plantjes/issues/11) | SEC-02: Configure devSecops board, security label and milestones | Phase 0 - Foundation | FR-11 | Label + 4 milestones + board fields |
+| [#11](https://github.com/Minprez-JP/Plantjes/issues/11) | SEC-02: Configure devSecops board, security label and milestones | Phase 0 - Foundation | FR-11 | Verified 2026-11-22: `security` label on all 16 epic issues, four phase milestones assigned, all 17 board items have Status, and Labels/Milestone/Repository fields are populated; closed |
 | [#12](https://github.com/Minprez-JP/Plantjes/issues/12) | SEC-03: Define security metrics, SLA and quarterly review cadence | Phase 0 - Foundation | FR-11, NFR-03, NFR-05 | High/Critical 7d, Medium 30d |
 | [#13](https://github.com/Minprez-JP/Plantjes/issues/13) | SEC-04: Integrate CodeQL SAST with SARIF upload | Phase 1 - Static and Supply Chain | FR-01, NFR-06 | Updated 2026-11-18: default CodeQL setup already active; baseline triage in #24 |
 | [#14](https://github.com/Minprez-JP/Plantjes/issues/14) | SEC-05: Add security lint rules for dangerous browser sinks | Phase 1 - Static and Supply Chain | FR-02 | Blocks `innerHTML`, `eval`, etc. |

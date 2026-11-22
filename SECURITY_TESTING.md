@@ -42,6 +42,17 @@ npm audit --audit-level=high
 | Dependency updates | Dependabot: npm (minor/patch grouped), GitHub Actions (weekly) | PR-based review |
 | Secret scanning | Enabled with push protection (provider patterns); alerts endpoint reachable. Non-provider patterns and validity checks remained disabled via API for this public repository. CI gitleaks check still tracked in [#16](https://github.com/Minprez-JP/Plantjes/issues/16) | — |
 
+## DevSecOps board configuration verification (2026-11-22)
+
+Verified against project [#2](https://github.com/users/Minprez-JP/projects/2) and epic [#9](https://github.com/Minprez-JP/Plantjes/issues/9):
+
+- The `security` label exists and is applied to every one of the 16 child issues in the epic.
+- All four phase milestones (`Phase 0 - Foundation`, `Phase 1 - Static and Supply Chain`, `Phase 2 - Dynamic and Input Testing`, `Phase 3 - Governance and Handover`) exist and are assigned to the relevant issues.
+- All 17 board items (the epic plus its 16 children) are attached to the project and have a `Status` value (`Todo`, `In Progress` or `Done`).
+- The `Status`, `Labels`, `Milestone` and `Repository` project fields are populated for each item.
+
+This completes [#11](https://github.com/Minprez-JP/Plantjes/issues/11).
+
 ## Requirement traceability
 
 | Requirement | Issue | Current check |
@@ -56,7 +67,7 @@ npm audit --audit-level=high
 | FR-08 ZAP baseline | [#21](https://github.com/Minprez-JP/Plantjes/issues/21) | Planned |
 | FR-09 No-egress test | [#20](https://github.com/Minprez-JP/Plantjes/issues/20) | Planned |
 | FR-10 CI gates | [#22](https://github.com/Minprez-JP/Plantjes/issues/22) | Planned |
-| FR-11 Board/metrics | [#11](https://github.com/Minprez-JP/Plantjes/issues/11), [#12](https://github.com/Minprez-JP/Plantjes/issues/12), [#25](https://github.com/Minprez-JP/Plantjes/issues/25) | Board configured; triage workflow tracked |
+| FR-11 Board/metrics | [#11](https://github.com/Minprez-JP/Plantjes/issues/11), [#12](https://github.com/Minprez-JP/Plantjes/issues/12), [#25](https://github.com/Minprez-JP/Plantjes/issues/25) | Board configuration verified 2026-11-22 (#11 closed); metrics and triage workflow tracked in #12/#25 |
 | FR-12 Documentation | [#10](https://github.com/Minprez-JP/Plantjes/issues/10), [#23](https://github.com/Minprez-JP/Plantjes/issues/23) | This guide + linked documents |
 
 ## Security alert triage workflow
