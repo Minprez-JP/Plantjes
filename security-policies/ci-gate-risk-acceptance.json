@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "no-required-review",
+      "owner": "maintainer",
+      "reason": "This is a single-maintainer project and GitHub forbids approving your own pull request. Approving reviews are therefore not enforced; pull requests, squash/rebase-only merges, resolved threads and all required security checks remain blocking.",
+      "issue": "https://github.com/Minprez-JP/Plantjes/issues/70",
+      "expires": "2027-02-23",
+      "review": "Quarterly security review #70; re-evaluate when a second maintainer is added."
+    }
+  ]
+}

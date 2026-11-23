@@ -6,8 +6,9 @@ on:
   schedule:
     - cron: '27 4 * * 1'
 
-# Job-level permissions grant only what CodeQL needs to upload SARIF.
-permissions: {}
+# Jobs inherit read-only repository access; the analyze job adds SARIF upload.
+permissions:
+  contents: read
 
 concurrency:
   group: codeql-${{ github.ref }}

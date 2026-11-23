@@ -23,9 +23,10 @@ npm run security:check
 
 1. `npm audit --audit-level=high --omit=dev` — blocking runtime dependency gate.
 2. `npm run security:reports` — runs `verify:install` (`npm ci` lockfile/hash
-   baseline check), then pinned lint rules, CycloneDX SBOMs, licence policy and
-   audit policy.
-3. `npm test` — unit, component, seeded fuzz/property, upload validation, production-build CSP/asset-integrity, ZAP report-gate, and security regression tests, including the lint fixtures. The browser no-egress suite is skipped here with `SKIP_BROWSER_EGRESS=1` and runs in a dedicated CI job.
+   baseline check) and `verify:ci-gates` (action pins, permissions and committed
+   ruleset), then pinned lint rules, CycloneDX SBOMs, licence policy and audit
+   policy.
+3. `npm test` — unit, component, seeded fuzz/property, upload validation, production-build CSP/asset-integrity, ZAP report-gate, CI gate verification, and security regression tests, including the lint fixtures. The browser no-egress suite is skipped here with `SKIP_BROWSER_EGRESS=1` and runs in a dedicated CI job.
 4. `npm run build` — type-check and production bundle.
 5. `npm run verify:no-egress` — dependency and built-bundle remote-asset check.
 
@@ -91,10 +92,39 @@ npm run secret:scan
 | CI secret scan | `ci.yml`: `gitleaks/gitleaks-action` pinned to `e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e` with `GITLEAKS_VERSION=8.30.1` and `.gitleaks.toml` | Yes |
 | Browser no-egress | `ci.yml`: dedicated `Browser no-egress` job drives system Chrome via CDP against a fresh preview build | Yes |
 | ZAP baseline | `ci.yml`: pinned ZAP stable Docker digest scans local `vite preview`; JSON/HTML artifacts plus `check-zap-report.mjs` high-risk gate | Yes |
+| CI gate verification | `npm run verify:ci-gates` checks full-SHA action pins, `contents: read` permissions, SARIF-only `security-events: write`, and the committed branch ruleset | Yes |
 
 The added `gitleaks`, `Browser no-egress` and `ZAP baseline` jobs each have a
 10-minute timeout and the SARIF upload job has a 10-minute timeout; the existing
 `Audit, test, and build` job stays at 15 minutes.
+
+## CI gate and branch ruleset verification (2026-11-23)
+
+`npm run verify:ci-gates` runs in `npm run security:reports` and writes
+`artifacts/security/ci-gates.json`. It checks that:
+
+- every workflow `uses:` action is pinned to a full 40-character commit SHA;
+- each workflow has top-level `contents: read`, and job scopes are limited to
+  `contents: read` plus `security-events: write` only in SARIF-uploading jobs;
+- `.github/rulesets/main-branch.json` is active, has no bypass actors, blocks
+  deletion/force-push/non-linear history, requires pull requests with resolved
+  threads and squash/rebase-only merges, and requires `Audit, test, and build`,
+  `Browser no-egress`, `ZAP baseline`, `gitleaks`, `Analyze (actions)` and
+  `Analyze (javascript-typescript)`. In this single-maintainer repository,
+  approving reviews are not enforced because GitHub cannot approve its own PR;
+  that exception is recorded in `security-policies/ci-gate-risk-acceptance.json`
+  and must be reviewed quarterly with [#70](https://github.com/Minprez-JP/Plantjes/issues/70).
+
+The live ruleset should be compared with the committed JSON after any change:
+
+```bash
+gh api repos/Minprez-JP/Plantjes/rulesets/27450843 \
+  --jq '{enforcement, bypass_actors, rules: [.rules[].type]}'
+gh api repos/Minprez-JP/Plantjes/rulesets/27450843 \
+  --jq '.rules[] | select(.type == "required_status_checks") | .parameters.required_status_checks'
+gh api repos/Minprez-JP/Plantjes/rulesets/27450843 \
+  --jq '.rules[] | select(.type == "pull_request") | .parameters.required_approving_review_count'
+```
 
 ## DevSecOps board configuration verification (2026-11-22)
 
@@ -236,7 +266,7 @@ and M2 gates whenever sanitisation or photo-input code changes.
 | FR-07 Upload regression | [#19](https://github.com/Minprez-JP/Plantjes/issues/19) | `src/__tests__/upload.test.tsx` covers the raster MIME allowlist, 15 MB pre-decode rejection, corrupt/truncated blobs, 1600 px downscaling, and object-URL fallbacks |
 | FR-08 ZAP baseline | [#21](https://github.com/Minprez-JP/Plantjes/issues/21) | `ci.yml`: pinned ZAP stable digest scans local `vite preview`, uploads JSON/HTML, and `scripts/security/check-zap-report.mjs` fails unaccepted High/Critical alerts with expiry-tracked risk acceptances |
 | FR-09 No-egress test | [#20](https://github.com/Minprez-JP/Plantjes/issues/20) | `scripts/security/browser-no-egress.test.mjs` drives system Chrome via CDP against a fresh production build and asserts local-only requests after load, import, photo add/remove and export |
-| FR-10 CI gates | [#22](https://github.com/Minprez-JP/Plantjes/issues/22) | Planned |
+| FR-10 CI gates | [#22](https://github.com/Minprez-JP/Plantjes/issues/22) | Full-SHA action pins, least-privilege permissions, `npm run verify:ci-gates`, and a live `Protect main` ruleset requiring pull requests, resolved threads and the six required security checks; single-maintainer self-approval is a documented risk in `security-policies/ci-gate-risk-acceptance.json`, reviewed quarterly with [#70](https://github.com/Minprez-JP/Plantjes/issues/70) |
 | FR-11 Board/metrics | [#11](https://github.com/Minprez-JP/Plantjes/issues/11), [#12](https://github.com/Minprez-JP/Plantjes/issues/12), [#25](https://github.com/Minprez-JP/Plantjes/issues/25), [#70](https://github.com/Minprez-JP/Plantjes/issues/70) | Board verified; metrics/SLA documented; quarterly review #70; triage workflow #25 |
 | FR-12 Documentation | [#10](https://github.com/Minprez-JP/Plantjes/issues/10), [#23](https://github.com/Minprez-JP/Plantjes/issues/23) | This guide + linked documents |
 
@@ -262,9 +292,17 @@ This is the process tracked by [#25](https://github.com/Minprez-JP/Plantjes/issu
 | [PR alert #3](https://github.com/Minprez-JP/Plantjes/security/code-scanning/3), [#4](https://github.com/Minprez-JP/Plantjes/security/code-scanning/4), [#5](https://github.com/Minprez-JP/Plantjes/security/code-scanning/5) — PR-only `js/xss-through-dom` findings | False positive | Same taint path on PR commits; dismissed with the same written rationale and review date. | Maintainer / review by 2027-02-18 ([#24](https://github.com/Minprez-JP/Plantjes/issues/24)) |
 | None currently open | — | `security-policies/audit.json` has `acceptedAdvisories: []` and the 2026-11-23 full audit reports 0 vulnerabilities. The former dev-only `picomatch` ReDoS acceptance is retired because the advisory is no longer reported. | Maintainer / monthly triage ([#25](https://github.com/Minprez-JP/Plantjes/issues/25)) |
 | None currently open | — | `security-policies/zap-risk-acceptance.json` has `entries: []`; the initial ZAP baseline has no accepted High/Critical alerts. | Maintainer / review before each release ([#21](https://github.com/Minprez-JP/Plantjes/issues/21)) |
+| `no-required-review` | Accepted risk | Single-maintainer repository: GitHub cannot approve its own pull request, so `required_approving_review_count` is 0. Required security checks, resolved threads, no bypass actors and pull requests remain enforced. | Maintainer / quarterly review by 2027-02-23 ([#70](https://github.com/Minprez-JP/Plantjes/issues/70)) |
 
 Security lint baseline: **empty** as of 2026-11-22 (46 files linted, 0 errors,
 0 warnings). There are no active `plantjes-suppress` entries in `src/**`.
+
+## Quarterly review checklist additions
+
+Review during [#70](https://github.com/Minprez-JP/Plantjes/issues/70):
+
+- `security-policies/ci-gate-risk-acceptance.json` still reflects the single-maintainer reality, or reviews are re-enabled when a second maintainer is added.
+- The live `Protect main` ruleset still requires the six security checks, pull requests, resolved threads, no bypass actors and no force-push/deletion/merge commits.
 
 ## Adding a new security check
 
