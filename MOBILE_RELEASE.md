@@ -1,18 +1,18 @@
 # Plantjes mobile APK release
 
-Status: **planning / feasibility** (last updated 2026-11-18)
+Status: **M1 go — scaffold PR in review** (last updated 2026-11-23)
 
-This is the canonical entry point for the local-run Android APK work. The shared React/Vite application lives on the protected `main` branch. No Capacitor `android/` scaffold exists yet; it is a planned deliverable of #34. Mobile work will be done on short-lived topic branches and merged into `main`.
+This is the canonical entry point for the local-run Android APK work. The shared React/Vite application lives on the protected `main` branch. The Capacitor `android/` scaffold is implemented on `release/mobile` and proposed for `main` in PR #81 (#34). Mobile work is done on short-lived topic branches and merged into `main`.
 
-- Active branch: [`main`](https://github.com/Minprez-JP/Plantjes/tree/main) (protected) — shared application only until the packaging gate is approved
-- Feasibility branch: [`release/mobile`](https://github.com/Minprez-JP/Plantjes/tree/release/mobile) — short-lived branch cut from `main` for M0/M1 APK work and the go/no-go decision; keep it synced with `main`, merge it via PR on a go, and retire it without merging on a no-go
-- Platform folders: `android/` (Capacitor, planned); `ios/` can be added later in the same repository
+- Active branch: [`main`](https://github.com/Minprez-JP/Plantjes/tree/main) (protected) — shared application and target branch for the Android scaffold PR
+- Feasibility/integration branch: [`release/mobile`](https://github.com/Minprez-JP/Plantjes/tree/release/mobile) — short-lived branch cut from `main` for M0/M1 APK work and the go/no-go decision; now synced with `main` and carrying the proven Capacitor scaffold; source of PR #81 into `main`; retire it after merge
+- Platform folders: `android/` (Capacitor, implemented on `release/mobile`, proposed for `main`); `ios/` can be added later in the same repository
 - Migration: mobile plan docs moved from the protected `Mobile` branch to `main` on 2026-11-18; the old branch is retained as `archive/mobile-branch` for history and link redirects
 - Epic: [#30 — Publish a local-run Android APK for Plantjes](https://github.com/Minprez-JP/Plantjes/issues/30)
 - Board: [Plantjes mobile development #3](https://github.com/users/Minprez-JP/projects/3)
 - Legacy branches: `archive/v2-mobile` and `archive/mobile-branch` are retained for history but are **not** active baselines. `archive/*` is read-only and delete-protected; fork the repository if you need to work on archived history.
 
-> No APK is published yet. `main` currently contains the scope, requirements, process, task register, timeline and risk record needed to make the go/no-go decision.
+> M1 gate decision: **GO (engineering feasibility)**, recorded in #48 on 2026-11-23. A clean-checkout debug APK was built, installed and published as the [v1.2.0 pre-release](https://github.com/Minprez-JP/Plantjes/releases/tag/v1.2.0). PR #81 proposes merging the scaffold into `main`; nothing is merged there until its required checks pass.
 
 ## Canonical documents
 

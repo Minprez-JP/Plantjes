@@ -1,13 +1,16 @@
 {
   "name": "plantjes",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "mobile:sync": "cap sync android",
+    "mobile:build": "npm run build && npm run mobile:sync",
+    "mobile:open": "cap open android",
     "lint:security": "eslint src --max-warnings=0",
     "security:reports": "node scripts/security-reports.mjs",
     "sbom:generate": "node scripts/security/generate-sbom.mjs",
@@ -20,6 +23,7 @@
     "security:check": "npm audit --audit-level=high --omit=dev && npm run security:reports && npm test && npm run build && npm run verify:no-egress"
   },
   "dependencies": {
+    "@capacitor/core": "8.6.2",
     "dexie": "^4.4.7",
     "lucide-react": "^1.74.0",
     "react": "^19.3.1",
@@ -30,6 +34,8 @@
     "@babel/eslint-parser": "8.1.2",
     "@babel/preset-react": "8.0.1",
     "@babel/preset-typescript": "8.0.7",
+    "@capacitor/android": "8.6.2",
+    "@capacitor/cli": "8.6.2",
     "@cyclonedx/cyclonedx-npm": "7.0.1",
     "@microsoft/eslint-formatter-sarif": "3.1.0",
     "@testing-library/react": "^16.3.3",

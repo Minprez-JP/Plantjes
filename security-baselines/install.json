@@ -3,8 +3,8 @@
   "reviewedBy": "Minprez-JP",
   "reviewedOn": "2026-11-23",
   "generatedWith": "Node 26.13.0 / npm 11.20.0",
-  "lockfileSha256": "f01e6aec1e4b7016d80ecd1f6188b07ef50bedb3ec4e0c5633317983b4ef7d47",
-  "packageListSha256": "919eb56d951dad77ed05ed85cf75dbc7dcc5e8db8c39ca6c718aa862582c5458",
-  "packageCount": 349,
-  "note": "Lockfile hash is computed on LF-normalized content so Windows and Linux agree. Baseline is toolchain-neutral: CI records node/npm versions but compares only content hashes. Node 22/26 equivalence evidence must be re-run for mobile issue #48; any baseline change requires a reviewed PR."
+  "lockfileSha256": "2938e35dc4b2dc85993a28bb7a0d9f13e5ec2b953bfa8a51aeb8d868fc9afe0a",
+  "packageListSha256": "a66acc29936b1ed92012210760b78488fdab4dfc24626df0d4c81764b450148a",
+  "packageCount": 432,
+  "note": "Release-candidate baseline for local v1.2.0 Android prerelease on 2026-11-23. Capacitor versions are pinned and package version is 1.2.0. Lockfile hash is computed on LF-normalized content so Windows and Linux agree. Do not merge this baseline to main: the final Android scaffold PR must re-review the dependency set and regenerate this file. Node 22/26 equivalence evidence must be re-run for mobile issue #48; any baseline change requires a reviewed PR."
 }
