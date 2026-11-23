@@ -25,9 +25,16 @@ npm run security:check
 2. `npm run security:reports` — runs `verify:install` (`npm ci` lockfile/hash
    baseline check), then pinned lint rules, CycloneDX SBOMs, licence policy and
    audit policy.
-3. `npm test` — unit, component, seeded fuzz/property, upload validation, production-build CSP/asset-integrity, and security regression tests, including the lint fixtures.
+3. `npm test` — unit, component, seeded fuzz/property, upload validation, production-build CSP/asset-integrity, and security regression tests, including the lint fixtures. The browser no-egress suite is skipped here with `SKIP_BROWSER_EGRESS=1` and runs in a dedicated CI job.
 4. `npm run build` — type-check and production bundle.
 5. `npm run verify:no-egress` — dependency and built-bundle remote-asset check.
+
+The browser no-egress test launches an installed Chrome, Chromium or Edge binary
+via the DevTools protocol; set `CHROME_PATH` if it is not in a standard location.
+No browser automation package is installed. In CI the dedicated
+`Browser no-egress` job detects the runner browser and runs only this suite;
+locally, run `npm test -- scripts/security/browser-no-egress.test.mjs` without
+`SKIP_BROWSER_EGRESS` to exercise the same path.
 
 To write the CI-equivalent evidence reports locally:
 
@@ -210,7 +217,7 @@ and M2 gates whenever sanitisation or photo-input code changes.
 | FR-06 Fuzz/import tests | [#18](https://github.com/Minprez-JP/Plantjes/issues/18) | Seeded generators in `src/lib/__tests__/{backup.fuzz,plantForm.fuzz,hostileInput.render}.test.*` cover malformed/oversized `.plantjes` payloads, field limits, numeric ranges, allowlists, and inert rendering of script-like text |
 | FR-07 Upload regression | [#19](https://github.com/Minprez-JP/Plantjes/issues/19) | `src/__tests__/upload.test.tsx` covers the raster MIME allowlist, 15 MB pre-decode rejection, corrupt/truncated blobs, 1600 px downscaling, and object-URL fallbacks |
 | FR-08 ZAP baseline | [#21](https://github.com/Minprez-JP/Plantjes/issues/21) | Planned |
-| FR-09 No-egress test | [#20](https://github.com/Minprez-JP/Plantjes/issues/20) | Planned |
+| FR-09 No-egress test | [#20](https://github.com/Minprez-JP/Plantjes/issues/20) | `scripts/security/browser-no-egress.test.mjs` drives system Chrome via CDP against a fresh production build and asserts local-only requests after load, import, photo add/remove and export |
 | FR-10 CI gates | [#22](https://github.com/Minprez-JP/Plantjes/issues/22) | Planned |
 | FR-11 Board/metrics | [#11](https://github.com/Minprez-JP/Plantjes/issues/11), [#12](https://github.com/Minprez-JP/Plantjes/issues/12), [#25](https://github.com/Minprez-JP/Plantjes/issues/25), [#70](https://github.com/Minprez-JP/Plantjes/issues/70) | Board verified; metrics/SLA documented; quarterly review #70; triage workflow #25 |
 | FR-12 Documentation | [#10](https://github.com/Minprez-JP/Plantjes/issues/10), [#23](https://github.com/Minprez-JP/Plantjes/issues/23) | This guide + linked documents |
