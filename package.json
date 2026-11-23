@@ -10,7 +10,13 @@
     "test": "vitest run",
     "lint:security": "eslint src --max-warnings=0",
     "security:reports": "node scripts/security-reports.mjs",
-    "security:check": "npm audit --audit-level=high --omit=dev && npm run lint:security && npm test && npm run build"
+    "sbom:generate": "node scripts/security/generate-sbom.mjs",
+    "licences:generate": "node scripts/security/generate-licences.mjs",
+    "verify:install": "node scripts/security/verify-install.mjs",
+    "verify:audit": "node scripts/security/verify-audit-policy.mjs",
+    "verify:no-egress": "node scripts/security/verify-no-egress.mjs",
+    "secret:scan": "node scripts/secret-scan.mjs",
+    "security:check": "npm audit --audit-level=high --omit=dev && npm run security:reports && npm test && npm run build && npm run verify:no-egress"
   },
   "dependencies": {
     "dexie": "^4.4.7",
@@ -23,11 +29,13 @@
     "@babel/eslint-parser": "8.1.2",
     "@babel/preset-react": "8.0.1",
     "@babel/preset-typescript": "8.0.7",
+    "@cyclonedx/cyclonedx-npm": "7.0.1",
     "@microsoft/eslint-formatter-sarif": "3.1.0",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
+    "ajv": "8.20.0",
     "eslint": "9.39.5",
     "jsdom": "^31.0.1",
     "typescript": "~7.0.2",
