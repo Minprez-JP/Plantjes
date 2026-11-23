@@ -11,8 +11,8 @@ Epic: [#9](https://github.com/Minprez-JP/Plantjes/issues/9) — label `security`
 | [#12](https://github.com/Minprez-JP/Plantjes/issues/12) | SEC-03: Define security metrics, SLA and quarterly review cadence | Phase 0 - Foundation | FR-11, NFR-03, NFR-05 | Metrics/SLA documented in `SECURITY_TESTING.md`; reports uploaded as `security-reports`; quarterly review in #70 |
 | [#13](https://github.com/Minprez-JP/Plantjes/issues/13) | SEC-04: Integrate CodeQL SAST with SARIF upload | Phase 1 - Static and Supply Chain | FR-01, NFR-06 | Committed `codeql.yml` with pinned SHAs replaces default setup; required checks remain #22 |
 | [#14](https://github.com/Minprez-JP/Plantjes/issues/14) | SEC-05: Add security lint rules for dangerous browser sinks | Phase 1 - Static and Supply Chain | FR-02 | Pinned flat config, four custom rules, negative/positive fixtures, JSON + SARIF evidence uploaded to code scanning |
-| [#15](https://github.com/Minprez-JP/Plantjes/issues/15) | SEC-06: Generate SBOM, licence report and harden dependency audit | Phase 1 - Static and Supply Chain | FR-03, NFR-04, NFR-05 | CycloneDX + licences + `npm audit` |
-| [#16](https://github.com/Minprez-JP/Plantjes/issues/16) | SEC-07: Enable GitHub secret scanning and CI gitleaks check | Phase 1 - Static and Supply Chain | FR-04 | GitHub secret scanning + push protection enabled 2026-11-18; CI gitleaks still open |
+| [#15](https://github.com/Minprez-JP/Plantjes/issues/15) | SEC-06: Generate SBOM, licence report and harden dependency audit | Phase 1 - Static and Supply Chain | FR-03, NFR-04, NFR-05 | Pinned CycloneDX SBOMs, licence policy, install baseline, audit policy and no-egress evidence; Android SBOMs are documented placeholders until a Capacitor scaffold exists |
+| [#16](https://github.com/Minprez-JP/Plantjes/issues/16) | SEC-07: Enable GitHub secret scanning and CI gitleaks check | Phase 1 - Static and Supply Chain | FR-04 | GitHub secret scanning + push protection enabled 2026-11-18; CI gitleaks pinned action and Docker-reproducible local scan |
 | [#17](https://github.com/Minprez-JP/Plantjes/issues/17) | SEC-08: Add CSP and asset-integrity regression test on production build | Phase 2 - Dynamic and Input Testing | FR-05 | Exact CSP meta, no sourcemaps/remote assets |
 | [#18](https://github.com/Minprez-JP/Plantjes/issues/18) | SEC-09: Fuzz and property-test backup import and plant form validation | Phase 2 - Dynamic and Input Testing | FR-06, NFR-02 | Malformed `.plantjes` payloads |
 | [#19](https://github.com/Minprez-JP/Plantjes/issues/19) | SEC-10: Add upload validation regression tests | Phase 2 - Dynamic and Input Testing | FR-07 | MIME allowlist, 15 MB, SVG rejection, downscale |
@@ -29,5 +29,6 @@ Epic: [#9](https://github.com/Minprez-JP/Plantjes/issues/9) — label `security`
 | Source | Status | Related task |
 | --- | --- | --- |
 | Dependabot alerts | Enabled; 0 open, 0 historical | #15, #25 |
-| Code scanning (CodeQL default setup) | Active; 2 original `js/xss-through-dom` alerts triaged as false positives and marked `fixed` after PRs #26/#28; PR-only alerts #3-#5 dismissed with the same rationale | #13, #24 |
-| Secret scanning | Enabled with push protection; alerts endpoint reachable; non-provider patterns/validity checks remained disabled via API; gitleaks CI still open | #16, #25 |
+| Code scanning (committed CodeQL workflow) | Active; 2 original `js/xss-through-dom` alerts triaged as false positives and marked `fixed` after PRs #26/#28; PR-only alerts #3-#5 dismissed with the same rationale | #13, #24 |
+| Secret scanning | Enabled with push protection; alerts endpoint reachable; non-provider patterns/validity checks remained disabled via API | #16, #25 |
+| CI gitleaks | Pinned action v3.0.0 with gitleaks 8.30.1 and structured allowlist; no findings in baseline scan | #16, #25 |

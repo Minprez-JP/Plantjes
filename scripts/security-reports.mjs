@@ -1,29 +1,43 @@
-import { spawnSync } from 'node:child_process'
-import { mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { ESLint } from 'eslint'
+import {
+  npmArgs,
+  outputDirectory,
+  root,
+  run,
+  writeJson,
+} from './security/common.mjs'
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const outputDirectory = resolve(root, 'artifacts/security')
-mkdirSync(outputDirectory, { recursive: true })
-
-const auditCommand =
-  process.platform === 'win32' ? 'npm.cmd audit --json --omit=dev' : 'npm audit --json --omit=dev'
-const audit = spawnSync(auditCommand, {
-  cwd: root,
-  encoding: 'utf8',
-  shell: true,
-})
-if (!audit.stdout) {
-  throw new Error(`npm audit produced no JSON output: ${audit.stderr || audit.error}`)
+function script(name) {
+  return resolve(root, 'scripts/security', name)
 }
 
-const auditReport = JSON.parse(audit.stdout)
-writeFileSync(
-  resolve(outputDirectory, 'npm-audit.json'),
-  `${JSON.stringify(auditReport, null, 2)}\n`,
-)
+function runScript(name) {
+  const result = run(process.execPath, [script(name)])
+  if (result.status !== 0) {
+    if (result.stderr) process.stderr.write(result.stderr)
+    throw new Error(`${name} failed with exit code ${result.status}`)
+  }
+  return result
+}
+
+function auditJson(args) {
+  const [command, commandArgs] = npmArgs(args)
+  const result = run(command, commandArgs)
+  if (!result.stdout) {
+    throw new Error(`npm audit produced no JSON output: ${result.stderr || result.error}`)
+  }
+  return { result, report: JSON.parse(result.stdout) }
+}
+
+runScript('verify-install.mjs')
+
+const prodAudit = auditJson(['audit', '--json', '--omit=dev'])
+writeJson('npm-audit.json', prodAudit.report)
+
+const allAudit = auditJson(['audit', '--json'])
+writeJson('npm-audit-all.json', allAudit.report)
 
 const eslint = new ESLint({
   cwd: root,
@@ -33,22 +47,46 @@ const results = await eslint.lintFiles(['src/**/*.{ts,tsx,js,jsx}'])
 const jsonFormatter = await eslint.loadFormatter('json')
 const sarifFormatter = await eslint.loadFormatter('@microsoft/eslint-formatter-sarif')
 
-writeFileSync(resolve(outputDirectory, 'security-lint.json'), await jsonFormatter.format(results))
-writeFileSync(resolve(outputDirectory, 'security-lint.sarif'), await sarifFormatter.format(results))
+writeJson('security-lint.json', JSON.parse(await jsonFormatter.format(results)))
+writeFileSync(
+  resolve(outputDirectory, 'security-lint.sarif'),
+  await sarifFormatter.format(results),
+)
+
+runScript('generate-sbom.mjs')
+runScript('generate-licences.mjs')
+runScript('verify-audit-policy.mjs')
 
 const errors = results.reduce((total, result) => total + result.errorCount, 0)
 const warnings = results.reduce((total, result) => total + result.warningCount, 0)
+const versions = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).devDependencies
+
 const summary = {
   generatedAt: new Date().toISOString(),
-  auditVulnerabilities: auditReport.metadata?.vulnerabilities ?? null,
+  auditVulnerabilities: prodAudit.report.metadata?.vulnerabilities ?? null,
+  allAuditVulnerabilities: allAudit.report.metadata?.vulnerabilities ?? null,
   filesLinted: results.length,
   lintErrors: errors,
   lintWarnings: warnings,
+  generators: {
+    cyclonedxNpm: '@cyclonedx/cyclonedx-npm@' + versions['@cyclonedx/cyclonedx-npm'],
+    eslint: 'eslint@' + versions.eslint,
+    eslintSarifFormatter: '@microsoft/eslint-formatter-sarif@' + versions['@microsoft/eslint-formatter-sarif'],
+  },
+  artifacts: [
+    'install-integrity.json',
+    'npm-audit.json',
+    'npm-audit-all.json',
+    'audit-policy.json',
+    'security-lint.json',
+    'security-lint.sarif',
+    'sbom-index.json',
+    'licence-inventory.json',
+    'licence-inventory.md',
+    'THIRD_PARTY_NOTICES.generated.md',
+  ],
 }
-writeFileSync(
-  resolve(outputDirectory, 'summary.json'),
-  `${JSON.stringify(summary, null, 2)}\n`,
-)
+writeJson('summary.json', summary)
 
 console.log(`Security reports written to ${outputDirectory}`)
-if (audit.status !== 0 || errors > 0 || warnings > 0) process.exitCode = 1
+if (prodAudit.result.status !== 0 || errors > 0 || warnings > 0) process.exitCode = 1

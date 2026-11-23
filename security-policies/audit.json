@@ -1,0 +1,7 @@
+{
+  "policyVersion": 1,
+  "scope": "all npm advisories reported by npm audit, including dev-only advisories",
+  "reviewedBy": "Minprez-JP",
+  "reviewedOn": "2026-11-23",
+  "acceptedAdvisories": []
+}

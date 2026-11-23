@@ -1,0 +1,14 @@
+title = "Plantjes secret scan"
+minVersion = "v8.30.1"
+
+# Extend the pinned default rules; this file only adds reviewed allowlist entries.
+[extend]
+useDefault = true
+
+# Structured owner/reason/expiry metadata lives in
+# security-policies/secret-scan-allowlist.json. Keep descriptions in sync.
+[[allowlists]]
+description = "No reviewed exceptions; see security-policies/secret-scan-allowlist.json"
+# Sentinel that cannot match a real secret. It satisfies the gitleaks schema
+# while the structured allowlist remains empty.
+regexes = ['''\bPLANTJES_NO_SECRET_ALLOWLIST_ENTRIES\b''']

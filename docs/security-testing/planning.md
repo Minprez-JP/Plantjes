@@ -72,7 +72,7 @@ Total: roughly **11–14 working days**, with Phase 1 and Phase 2 parallelisable
 
 - **Dependabot:** security updates enabled; 0 open and 0 historical Dependabot alerts.
 - **Code scanning:** CodeQL default setup active (`dynamic/github-code-scanning/codeql`) for JavaScript/TypeScript and Actions. Two open `js/xss-through-dom` alerts (#1, #2), both traced from `event.target.files?.[0]` through `URL.createObjectURL` into React `<img src>`. Likely a CodeQL false positive given React escaping and opaque `blob:` URLs, but it requires documented triage — tracked in #24.
-- **Secret scanning:** initially disabled (404); enabled during implementation with push protection. Non-provider patterns and validity checks remained disabled via API for this public repository. CI gitleaks remains tracked in #16.
+- **Secret scanning:** initially disabled (404); enabled during implementation with push protection. Non-provider patterns and validity checks remained disabled via API for this public repository. CI gitleaks is implemented in #16 with a pinned action and structured allowlist.
 - **New tasks:** #24 (triage/resolve the two CodeQL alerts, Phase 1) and #25 (recurring security-alert triage workflow, Phase 3). Existing #13 and #16 were updated with the current state instead of duplicating them.
 
 ## 8. Current status
@@ -85,4 +85,4 @@ Total: roughly **11–14 working days**, with Phase 1 and Phase 2 parallelisable
 - #11 (closed): board label, milestones, attachment and fields verified on 2026-11-22.
 - #12, #13 and #14 implemented in the 2026-11-22 CI/security batch: metrics and SLA documented, committed pinned CodeQL workflow replaces default setup, and pinned ESLint security rules run with JSON/SARIF evidence.
 - #70 created as the recurring quarterly review item; first review due 2027-02-22.
-- GitHub secret scanning, push protection and the secret-scanning alerts endpoint are enabled; gitleaks CI remains open in #16.
+- GitHub secret scanning, push protection and the secret-scanning alerts endpoint are enabled; gitleaks CI is implemented in #16.

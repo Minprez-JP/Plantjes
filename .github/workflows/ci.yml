@@ -17,6 +17,8 @@ jobs:
     name: Audit, test, and build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      artifact-name: ${{ steps.artifact-name.outputs.name }}
 
     steps:
       - name: Check out repository
@@ -33,32 +35,72 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify reproducible install
+        run: |
+          git diff --exit-code -- package-lock.json
+          npm run verify:install
+
       # The app ships no development dependencies, so the blocking gate audits
-      # only the runtime graph. Dev-only advisories (for example the unpatched
-      # picomatch ReDoS GHSA-fc5q-39xc-vjpf) are reported without blocking.
+      # only the runtime graph. Dev-only advisories are checked by the audit
+      # policy in security reports and need a reviewed acceptance to pass.
       - name: Audit runtime dependencies
         run: npm audit --audit-level=high --omit=dev
 
       - name: Report dev-only advisories
         run: npm audit --audit-level=high || true
 
-      # This also runs the pinned security lint rules and fails on any finding.
+      # Generates audit/SARIF evidence, CycloneDX SBOMs, licence inventory and
+      # third-party notices from the installed dependency tree.
       - name: Generate security reports
         run: npm run security:reports
-
-      - name: Upload security reports
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: security-reports
-          path: artifacts/security/
-          retention-days: 90
-          if-no-files-found: error
 
       - name: Test
         run: npm test
 
       - name: Build
         run: npm run build
+
+      - name: Verify no remote egress
+        run: npm run verify:no-egress
+
+      - name: Set artifact name
+        id: artifact-name
+        run: |
+          branch="${GITHUB_REF_NAME//[^A-Za-z0-9._-]/-}"
+          echo "name=security-reports-${branch}-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.artifact-name.outputs.name }}
+          path: artifacts/security/
+          retention-days: 90
+          if-no-files-found: error
+
+  secret-scan:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan commits for secrets
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_COMMENTS: 'false'
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
+          GITLEAKS_ENABLE_SUMMARY: 'true'
 
   upload-security-sarif:
     name: Upload security lint SARIF
@@ -73,7 +115,7 @@ jobs:
       - name: Download security reports
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: security-reports
+          name: ${{ needs.verify.outputs.artifact-name }}
           path: artifacts/security
 
       - name: Upload SARIF to code scanning

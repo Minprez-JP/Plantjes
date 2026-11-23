@@ -1,0 +1,31 @@
+{
+  "policyVersion": 1,
+  "scope": "production dependency graph from package-lock.json",
+  "reviewedBy": "Minprez-JP",
+  "reviewedOn": "2026-11-23",
+  "reviewDue": "2027-02-22",
+  "allowedLicenses": [
+    "0BSD",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "CC0-1.0",
+    "ISC",
+    "MIT",
+    "Unlicense"
+  ],
+  "deniedPatterns": [
+    "^AGPL-",
+    "^GPL-",
+    "^LGPL-",
+    "^SSPL-",
+    "^BUSL-",
+    "^CC-BY-NC",
+    "^Commons-Clause",
+    "^Elastic-License",
+    "^UNLICENSED$",
+    "^LicenseRef-",
+    "source[ -]?available"
+  ],
+  "approvals": []
+}
