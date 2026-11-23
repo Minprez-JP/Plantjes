@@ -28,9 +28,11 @@
           "squash",
           "rebase"
         ],
-        "dismiss_stale_reviews_on_push": true,
+        "dismiss_stale_reviews_on_push": false,
         "require_code_owner_review": false,
         "require_last_push_approval": false,
+        "require_extra_approval_for_unattributed_changes": false,
+        "required_reviewers": [],
         "required_approving_review_count": 0,
         "required_review_thread_resolution": true
       }
@@ -38,11 +40,31 @@
     {
       "type": "required_status_checks",
       "parameters": {
-        "do_not_enforce_on_create": true,
+        "do_not_enforce_on_create": false,
         "strict_required_status_checks_policy": true,
         "required_status_checks": [
           {
             "context": "Audit, test, and build",
+            "integration_id": 15368
+          },
+          {
+            "context": "Browser no-egress",
+            "integration_id": 15368
+          },
+          {
+            "context": "ZAP baseline",
+            "integration_id": 15368
+          },
+          {
+            "context": "gitleaks",
+            "integration_id": 15368
+          },
+          {
+            "context": "Analyze (actions)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Analyze (javascript-typescript)",
             "integration_id": 15368
           }
         ]

@@ -13,6 +13,7 @@
     "sbom:generate": "node scripts/security/generate-sbom.mjs",
     "licences:generate": "node scripts/security/generate-licences.mjs",
     "verify:install": "node scripts/security/verify-install.mjs",
+    "verify:ci-gates": "node scripts/security/verify-ci-gates.mjs",
     "verify:audit": "node scripts/security/verify-audit-policy.mjs",
     "verify:no-egress": "node scripts/security/verify-no-egress.mjs",
     "secret:scan": "node scripts/secret-scan.mjs",

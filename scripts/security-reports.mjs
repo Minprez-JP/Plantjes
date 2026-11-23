@@ -32,6 +32,7 @@ function auditJson(args) {
 }
 
 runScript('verify-install.mjs')
+runScript('verify-ci-gates.mjs')
 
 const prodAudit = auditJson(['audit', '--json', '--omit=dev'])
 writeJson('npm-audit.json', prodAudit.report)
@@ -75,6 +76,7 @@ const summary = {
   },
   artifacts: [
     'install-integrity.json',
+    'ci-gates.json',
     'npm-audit.json',
     'npm-audit-all.json',
     'audit-policy.json',
