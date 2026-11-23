@@ -7,7 +7,7 @@
 - **Stack:** TypeScript, React 19, Vite 8, Dexie 4 (IndexedDB), Vitest, npm.
 - **Architecture:** No server, no accounts, no telemetry. All data stays in the browser origin; backups are unencrypted `.plantjes` JSON files.
 - **Current security posture:** `SECURITY.md` defines the threat model, OWASP Top 10:2025 mapping, input limits, CSP injection, dependency policy, and a review checklist. CI runs blocking audit, tests, build, pinned ESLint security rules, CycloneDX SBOM/licence reports, install-integrity checks, no-egress evidence and gitleaks. CodeQL runs as a committed workflow; GitHub secret scanning and push protection are enabled. Dependabot maintains npm and GitHub Actions.
-- **Remaining gap:** ZAP baseline (#21) and required-check hardening (#22) are still in progress. CSP/asset-integrity coverage is in `scripts/security/production-build.test.mjs`; browser no-egress is in `scripts/security/browser-no-egress.test.mjs`; seeded fuzz/property tests are in `src/lib/__tests__/`; upload validation coverage is in `src/__tests__/upload.test.tsx`. The `devSecops` board is populated and actively tracked.
+- **Remaining gap:** Required-check hardening (#22) is still in progress. CSP/asset-integrity coverage is in `scripts/security/production-build.test.mjs`; browser no-egress is in `scripts/security/browser-no-egress.test.mjs`; ZAP baseline with an expiry-tracked high-risk gate is in `ci.yml` and `scripts/security/check-zap-report.mjs`; seeded fuzz/property tests are in `src/lib/__tests__/`; upload validation coverage is in `src/__tests__/upload.test.tsx`. The `devSecops` board is populated and actively tracked.
 
 ## 2. Objectives
 
