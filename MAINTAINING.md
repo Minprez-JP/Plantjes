@@ -23,11 +23,10 @@ repository is made public:
 - [ ] **Dependabot security updates** — enabled. Keep them enabled.
 - [ ] **Dependabot version updates** — `.github/dependabot.yml` covers npm and
       GitHub Actions on a weekly schedule.
-- [ ] **Secret scanning and push protection** — enable both. Secret scanning is
-      free for public repositories; it is not available on this private
-      repository.
-- [ ] **Code scanning** — enable CodeQL default setup for JavaScript and
-      TypeScript after publication.
+- [x] **Secret scanning and push protection** — enabled. CI also runs pinned
+      gitleaks with a checked-in allowlist (`#16`).
+- [x] **Code scanning** — committed `.github/workflows/codeql.yml` analyses
+      JavaScript/TypeScript and Actions and uploads SARIF (`#13`).
 - [ ] **Private vulnerability reporting** — enable it and verify the report link
       in [SECURITY.md](./SECURITY.md) works.
 - [ ] **Actions** — keep the default workflow token permission at **read-only**

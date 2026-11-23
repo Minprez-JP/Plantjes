@@ -2,11 +2,11 @@
 
 Status: **planning / feasibility** (last updated 2026-11-18)
 
-This is the canonical entry point for the local-run Android APK work. The shared React/Vite application and the Android shell live together on the protected `main` branch; mobile work is done on short-lived topic branches and merged into `main`.
+This is the canonical entry point for the local-run Android APK work. The shared React/Vite application lives on the protected `main` branch. No Capacitor `android/` scaffold exists yet; it is a planned deliverable of #34. Mobile work will be done on short-lived topic branches and merged into `main`.
 
-- Active branch: [`main`](https://github.com/Minprez-JP/Plantjes/tree/main) (protected) — shared application plus the `android/` shell
+- Active branch: [`main`](https://github.com/Minprez-JP/Plantjes/tree/main) (protected) — shared application only until the packaging gate is approved
 - Feasibility branch: [`release/mobile`](https://github.com/Minprez-JP/Plantjes/tree/release/mobile) — short-lived branch cut from `main` for M0/M1 APK work and the go/no-go decision; keep it synced with `main`, merge it via PR on a go, and retire it without merging on a no-go
-- Platform folders: `android/` (Capacitor); `ios/` can be added later in the same repository
+- Platform folders: `android/` (Capacitor, planned); `ios/` can be added later in the same repository
 - Migration: mobile plan docs moved from the protected `Mobile` branch to `main` on 2026-11-18; the old branch is retained as `archive/mobile-branch` for history and link redirects
 - Epic: [#30 — Publish a local-run Android APK for Plantjes](https://github.com/Minprez-JP/Plantjes/issues/30)
 - Board: [Plantjes mobile development #3](https://github.com/users/Minprez-JP/projects/3)

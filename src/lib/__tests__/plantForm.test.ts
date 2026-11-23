@@ -118,6 +118,10 @@ describe('parsePlantForm error routing', () => {
     ['minimum temperature', { minTemperature: '2.5' }, 'environment', 'minTemperature'],
     ['maximum temperature', { maxTemperature: '2.5' }, 'environment', 'maxTemperature'],
     ['inverted temperature', { minTemperature: '20', maxTemperature: '10' }, 'environment', 'minTemperature'],
+    ['hex-like temperature', { minTemperature: '0x10' }, 'environment', 'minTemperature'],
+    ['exponent temperature', { minTemperature: '1e2' }, 'environment', 'minTemperature'],
+    ['out-of-range temperature', { minTemperature: '101' }, 'environment', 'minTemperature'],
+    ['scientific watering interval', { waterEveryDays: '1e2' }, 'main', 'waterEveryDays'],
     ['minimum humidity', { minHumidity: '110' }, 'environment', 'minHumidity'],
     ['maximum humidity', { maxHumidity: '110' }, 'environment', 'maxHumidity'],
     ['inverted humidity', { minHumidity: '20', maxHumidity: '10' }, 'environment', 'minHumidity'],
@@ -132,6 +136,19 @@ describe('parsePlantForm error routing', () => {
     if (result.ok) throw new Error('Expected validation to fail')
     expect(result.tab).toBe(tab)
     expect(result.field).toBe(field)
+  })
+
+  it('rejects file-valued text fields instead of stringifying them', () => {
+    const data = form()
+    data.set('name', new File(['Monstera'], 'name.txt', { type: 'text/plain' }))
+
+    const result = parsePlantForm(data, locations)
+
+    expect(result.ok).toBe(false)
+    if (result.ok) throw new Error('Expected validation to fail')
+    expect(result.tab).toBe('main')
+    expect(result.field).toBe('name')
+    expect(result.error).toMatch(/must be text/)
   })
 
   it('routes image errors to the Picture tab', () => {
@@ -214,6 +231,18 @@ describe('parseCareForm', () => {
     if (result.ok) throw new Error('Expected validation to fail')
     expect(result.field).toBe(field)
     expect(result.error).toMatch(/whole numbers/)
+  })
+
+  it('rejects file-valued pruning fields instead of stringifying them', () => {
+    const data = new FormData()
+    data.set('pruningNotes', new File(['notes'], 'notes.txt', { type: 'text/plain' }))
+
+    const result = parseCareForm(data)
+
+    expect(result.ok).toBe(false)
+    if (result.ok) throw new Error('Expected validation to fail')
+    expect(result.field).toBe('pruningNotes')
+    expect(result.error).toMatch(/must be text/)
   })
 })
 

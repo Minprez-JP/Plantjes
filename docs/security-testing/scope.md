@@ -6,8 +6,8 @@
 - **Application under test:** `Minprez-JP/Plantjes` — a local-first, client-only plant care journal.
 - **Stack:** TypeScript, React 19, Vite 8, Dexie 4 (IndexedDB), Vitest, npm.
 - **Architecture:** No server, no accounts, no telemetry. All data stays in the browser origin; backups are unencrypted `.plantjes` JSON files.
-- **Current security posture:** `SECURITY.md` already defines a threat model, OWASP Top 10:2025 mapping, input limits, CSP injection, dependency policy, and a review checklist. CI runs `npm audit --audit-level=high`, tests, and a production build. Dependabot maintains npm and GitHub Actions.
-- **Gap:** There is no dedicated security-testing layer (SAST, security linting, SBOM/license evidence, secret scanning, DAST, fuzz/negative tests, CSP/egress regression tests) and the `devSecops` board is empty.
+- **Current security posture:** `SECURITY.md` defines the threat model, OWASP Top 10:2025 mapping, input limits, CSP injection, dependency policy, and a review checklist. CI runs blocking audit, tests, build, pinned ESLint security rules, CycloneDX SBOM/licence reports, install-integrity checks, no-egress evidence and gitleaks. CodeQL runs as a committed workflow; GitHub secret scanning and push protection are enabled. Dependabot maintains npm and GitHub Actions.
+- **Remaining gap:** Automated CSP/asset-integrity regression coverage (#17), fuzz/property tests (#18), upload regression tests (#19), browser no-egress tests (#20), ZAP baseline (#21), and required-check hardening (#22) are still in progress. The `devSecops` board is populated and actively tracked.
 
 ## 2. Objectives
 

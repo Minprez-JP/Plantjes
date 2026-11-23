@@ -4,12 +4,14 @@ import {
   BACKUP_EXTENSION,
   BACKUP_FORMAT,
   BACKUP_VERSION,
+  MAX_BACKUP_BYTES,
   MAX_BACKUP_NAME,
   buildPlantjesDocument,
   defaultBackupName,
   hasPlantjesExtension,
   normalizeBackupName,
   parsePlantjes,
+  validateBackupFileInfo,
 } from '../backup'
 import { NOW, NOW_ISO, makePlant } from './helpers'
 
@@ -79,6 +81,22 @@ describe('hasPlantjesExtension', () => {
   })
 })
 
+describe('validateBackupFileInfo', () => {
+  it('accepts an in-limit .plantjes file', () => {
+    expect(validateBackupFileInfo('garden.PLANTJES', 1024)).toEqual({ ok: true })
+  })
+
+  it('rejects a wrong extension, an invalid size, and an oversized file', () => {
+    expect(validateBackupFileInfo('garden.json', 1)).toMatchObject({ ok: false })
+    expect(validateBackupFileInfo('garden.plantjes', Number.NaN)).toMatchObject({ ok: false })
+    expect(validateBackupFileInfo('garden.plantjes', -1)).toMatchObject({ ok: false })
+    const oversized = validateBackupFileInfo('garden.plantjes', MAX_BACKUP_BYTES + 1)
+    expect(oversized).toMatchObject({ ok: false })
+    if (oversized.ok) throw new Error('Expected the size check to fail')
+    expect(oversized.error).toMatch(/100 MB or smaller/)
+  })
+})
+
 describe('defaultBackupName', () => {
   it('uses the local date in a file-safe format', () => {
     expect(defaultBackupName(new Date(2026, 0, 5))).toBe('plantjes-backup-2026-01-05')
@@ -132,6 +150,12 @@ describe('buildPlantjesDocument', () => {
 })
 
 describe('parsePlantjes', () => {
+  const emptyBackup = JSON.stringify({
+    format: BACKUP_FORMAT,
+    version: BACKUP_VERSION,
+    plants: [],
+  })
+
   async function exportedText() {
     const image = new Blob([new Uint8Array([1, 2, 3, 4])], { type: 'image/png' })
     const plant = makePlant({
@@ -208,6 +232,47 @@ describe('parsePlantjes', () => {
     })
   })
 
+  it('honours a supplied byte length before parsing', () => {
+    const result = parsePlantjes(emptyBackup, { byteLength: MAX_BACKUP_BYTES + 1 })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) throw new Error('Expected parsing to fail')
+    expect(result.error).toMatch(/100 MB or smaller/)
+  })
+
+  it('uses the injected clock for the fallback fertilization date', async () => {
+    const document = JSON.parse(await exportedText()) as {
+      plants: Array<Record<string, unknown>>
+    }
+    delete document.plants[0].lastFertilizedAt
+    const fixedNow = new Date('2030-06-01T00:00:00.000Z')
+
+    const result = parsePlantjes(JSON.stringify(document), { now: fixedNow })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) throw new Error(result.error)
+    expect(result.plants[0].lastFertilizedAt).toBe('2030-06-01T00:00:00.000Z')
+  })
+
+  it('normalizes imported note line endings', () => {
+    const result = parsePlantjes(JSON.stringify({
+      format: BACKUP_FORMAT,
+      version: BACKUP_VERSION,
+      plants: [{
+        name: 'Basil',
+        environment: 'Indoor',
+        waterEveryDays: 7,
+        lastWateredAt: NOW_ISO,
+        createdAt: NOW_ISO,
+        notes: 'First line\r\nSecond line\r',
+      }],
+    }))
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) throw new Error(result.error)
+    expect(result.plants[0].notes).toBe('First line\nSecond line')
+  })
+
   it('rejects invalid JSON', () => {
     const result = parsePlantjes('{')
     expect(result.ok).toBe(false)
@@ -274,6 +339,11 @@ describe('parsePlantjes', () => {
       [{ light: 'Moonlight' }, /light preference/],
       [{ expectedHeightCm: 0 }, /pruning height/],
       [{ heightAfterPruningCm: 2.5 }, /whole number/],
+      [{ minTemperature: '0x10' }, /whole number/],
+      [{ minTemperature: '1e2' }, /whole number/],
+      [{ minTemperature: -101 }, /temperature outside the supported range/],
+      [{ maxTemperature: 101 }, /temperature outside the supported range/],
+      [{ createdAt: '2026-01-11T12:00:00Z' }, /ISO UTC date/],
       [{ image: 'data:text/plain;base64,AAAA' }, /JPEG, PNG/],
     ]
 

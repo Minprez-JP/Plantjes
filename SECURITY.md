@@ -101,7 +101,7 @@ Defined in `src/lib/constants.ts` and enforced in `src/lib/plantForm.ts`:
 | Feeding interval | 1–365 days when enabled; blank disables the schedule and clears the type/timestamp |
 | Fertilizer type | Optional select restricted to `Liquid feed`, `Water-soluble powder`, `Slow-release granules`, `Fertilizer spikes`, and `Organic feed` with a `Not set` option |
 | Humidity | Whole numbers, 0–100, minimum ≤ maximum |
-| Temperature | Whole numbers, minimum ≤ maximum |
+| Temperature | Whole numbers from -100 to 100 °C, minimum ≤ maximum |
 | Soil details | Optional selects; drainage, composition, and pH are restricted to fixed allowlists |
 
 Stored photos are downscaled to at most 1,600 px on the longest side and

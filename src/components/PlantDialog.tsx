@@ -129,6 +129,8 @@ export function PlantDialog({
   const [imageFile, setImageFile] = useState<File | undefined>()
   const [removeImage, setRemoveImage] = useState(false)
   const [validationError, setValidationError] = useState<PlantFormIssue | null>(null)
+  const [saving, setSaving] = useState(false)
+  const savingRef = useRef(false)
   const formRef = useRef<HTMLFormElement>(null)
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
   const locationSelectRef = useRef<HTMLSelectElement>(null)
@@ -176,8 +178,10 @@ export function PlantDialog({
     }
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (savingRef.current) return
+
     const result = parsePlantForm(new FormData(event.currentTarget), locations)
 
     if (!result.ok) {
@@ -191,7 +195,14 @@ export function PlantDialog({
     }
 
     setValidationError(null)
-    void onSave(result.submission)
+    savingRef.current = true
+    setSaving(true)
+    try {
+      await onSave(result.submission)
+    } finally {
+      savingRef.current = false
+      setSaving(false)
+    }
   }
 
   function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
@@ -740,7 +751,7 @@ export function PlantDialog({
             <span><ArrowDown size={14} /> Saved to this device</span>
             <div>
               <button type="button" className="button button-quiet" onClick={onClose}>Cancel</button>
-              <button type="submit" className="button button-primary"><Check size={16} /> {plant ? 'Save changes' : 'Add plant'}</button>
+              <button type="submit" className="button button-primary" disabled={saving}><Check size={16} /> {saving ? 'Saving…' : plant ? 'Save changes' : 'Add plant'}</button>
             </div>
           </div>
         </form>

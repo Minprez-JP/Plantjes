@@ -30,10 +30,6 @@ export const securityConfig = {
   rules,
 }
 
-// Used by the fixture tests; identical to the production config but does not
-// ignore the deliberate-violation fixtures.
-export const fixtureConfig = [securityConfig]
-
 export default [
   {
     ignores: [

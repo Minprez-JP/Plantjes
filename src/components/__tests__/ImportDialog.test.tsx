@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { ImportDialog } from '../ImportDialog'
 
 afterEach(cleanup)
@@ -30,6 +30,14 @@ async function chooseFile(contents: string, name: string) {
   const input = screen.getByLabelText(/choose a .plantjes backup file/i)
   const file = new File([contents], name, { type: 'application/json' })
   fireEvent.change(input, { target: { files: [file] } })
+}
+
+function deferredFile(contents: string, name: string) {
+  let resolveText!: (value: string) => void
+  const text = new Promise<string>((resolve) => { resolveText = resolve })
+  const file = new File([contents], name, { type: 'application/json' })
+  Object.defineProperty(file, 'text', { value: () => text })
+  return { file, resolveText }
 }
 
 describe('ImportDialog validation feedback', () => {
@@ -92,5 +100,23 @@ describe('ImportDialog validation feedback', () => {
       ok: true,
       imageCount: 0,
     })
+  })
+
+  it('ignores a stale file read when a newer file is selected', async () => {
+    renderDialog()
+    const slow = deferredFile(validBackup, 'slow.plantjes')
+    const input = screen.getByLabelText(/choose a .plantjes backup file/i)
+
+    fireEvent.change(input, { target: { files: [slow.file] } })
+    expect((screen.getByRole('button', { name: /replace collection/i }) as HTMLButtonElement).disabled).toBe(true)
+
+    await chooseFile(validBackup, 'fast.plantjes')
+    expect(await screen.findByText('fast.plantjes')).toBeTruthy()
+
+    slow.resolveText(validBackup)
+    await waitFor(() => {
+      expect(screen.queryByText('slow.plantjes')).toBeNull()
+    })
+    expect((screen.getByRole('button', { name: /replace collection/i }) as HTMLButtonElement).disabled).toBe(false)
   })
 })

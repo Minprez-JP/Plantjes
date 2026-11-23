@@ -31,13 +31,6 @@ const CARE_ERROR =
   'The care details could not be saved. Browser storage may be full or unavailable.'
 const NOTE_ERROR =
   'The note could not be saved. Browser storage may be full or unavailable.'
-/** An empty update would be a no-op, so Clear writes every optional pruning field explicitly. */
-const CLEARED_CARE: CareDetails = {
-  pruningTime: '',
-  expectedHeightCm: undefined,
-  heightAfterPruningCm: undefined,
-  pruningNotes: '',
-}
 const LOCATION_ERROR =
   'The location could not be saved. Browser storage may be full or unavailable.'
 const EXPORT_ERROR =
@@ -98,7 +91,7 @@ export interface PlantJournal {
  * Owns the plant collection and the add/edit dialog: loading, persistence,
  * local state updates, and derived watering data. Components stay presentational.
  */
-export function usePlantJournal(): PlantJournal {
+export function usePlantJournal(now: () => number = Date.now): PlantJournal {
   const [plants, setPlants] = useState<Plant[]>([])
   const [locations, setLocations] = useState<PlantLocation[]>([])
   const [loading, setLoading] = useState(true)
@@ -144,11 +137,12 @@ export function usePlantJournal(): PlantJournal {
 
   useStoredPhotoBackfill(plants, setPlants)
 
-  const rows = useMemo(() => toPlantRows(plants), [plants])
+  const derivedNow = now()
+  const rows = useMemo(() => toPlantRows(plants, derivedNow), [plants, derivedNow])
   const dueRows = useMemo(() => selectDueRows(rows), [rows])
   const dueFeedRows = useMemo(() => selectFertilizerDueRows(rows), [rows])
   const feedingTrackedCount = useMemo(() => countTrackedFeeding(rows), [rows])
-  const nextFeedingLabel = useMemo(() => formatNextFeeding(rows), [rows])
+  const nextFeedingLabel = useMemo(() => formatNextFeeding(rows, derivedNow), [rows, derivedNow])
   const wateredCount = rows.length - dueRows.length
 
   const openNewPlant = useCallback(() => {
@@ -213,7 +207,7 @@ export function usePlantJournal(): PlantJournal {
 
   const savePlant = useCallback(async ({ values, imageFile, removeImage }: PlantFormSubmission) => {
     setSaveError('')
-    const now = new Date().toISOString()
+    const timestamp = new Date(now()).toISOString()
 
     try {
       const imageBlob = imageFile
@@ -224,7 +218,7 @@ export function usePlantJournal(): PlantJournal {
       const savedPlant = buildPlantRecord({
         values,
         previous: editingPlant ?? undefined,
-        now,
+        now: timestamp,
         imageBlob,
         imageOptimized,
       })
@@ -244,7 +238,7 @@ export function usePlantJournal(): PlantJournal {
     } catch {
       setSaveError(SAVE_ERROR)
     }
-  }, [editingPlant])
+  }, [editingPlant, now])
 
   const openCareDetails = useCallback((plant: Plant) => {
     setCarePlant(plant)
@@ -259,12 +253,11 @@ export function usePlantJournal(): PlantJournal {
   const saveCare = useCallback(async (details: CareDetails) => {
     if (carePlant?.id === undefined) return
     setCareError('')
-    const changes = Object.keys(details).length > 0 ? details : CLEARED_CARE
 
     try {
-      await plantDatabase.plants.update(carePlant.id, changes)
+      await plantDatabase.plants.update(carePlant.id, details)
       setPlants((current) => current.map((item) => (
-        item.id === carePlant.id ? { ...item, ...changes } : item
+        item.id === carePlant.id ? { ...item, ...details } : item
       )))
       setCarePlant(null)
     } catch {
@@ -403,7 +396,7 @@ export function usePlantJournal(): PlantJournal {
 
   const waterPlant = useCallback(async (plant: Plant) => {
     if (plant.id === undefined) return
-    const lastWateredAt = new Date().toISOString()
+    const lastWateredAt = new Date(now()).toISOString()
 
     try {
       await plantDatabase.plants.update(plant.id, { lastWateredAt })
@@ -414,7 +407,7 @@ export function usePlantJournal(): PlantJournal {
     } catch {
       setActionError(WATER_ERROR)
     }
-  }, [])
+  }, [now])
 
   /**
    * Waters a filtered group in one transaction. Either every record is
@@ -430,7 +423,7 @@ export function usePlantJournal(): PlantJournal {
     ]
     if (ids.length === 0) return false
 
-    const lastWateredAt = new Date().toISOString()
+    const lastWateredAt = new Date(now()).toISOString()
 
     try {
       await plantDatabase.transaction('rw', plantDatabase.plants, async () => {
@@ -451,11 +444,11 @@ export function usePlantJournal(): PlantJournal {
       setActionError(WATER_MANY_ERROR)
       return false
     }
-  }, [])
+  }, [now])
 
   const fertilizePlant = useCallback(async (plant: Plant) => {
     if (plant.id === undefined || plant.fertilizeEveryDays === undefined) return
-    const lastFertilizedAt = new Date().toISOString()
+    const lastFertilizedAt = new Date(now()).toISOString()
 
     try {
       await plantDatabase.plants.update(plant.id, { lastFertilizedAt })
@@ -466,7 +459,7 @@ export function usePlantJournal(): PlantJournal {
     } catch {
       setActionError(FERTILIZE_ERROR)
     }
-  }, [])
+  }, [now])
 
   const removePlant = useCallback(async (plant: Plant) => {
     if (plant.id === undefined || !window.confirm(`Remove ${plant.name} from your plant journal?`)) {
