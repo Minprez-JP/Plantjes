@@ -272,16 +272,46 @@ and M2 gates whenever sanitisation or photo-input code changes.
 
 ## Security alert triage workflow
 
-This is the process tracked by [#25](https://github.com/Minprez-JP/Plantjes/issues/25).
+This is the process tracked by [#25](https://github.com/Minprez-JP/Plantjes/issues/25). Owner: **maintainer**. Cadence is flexible but explicit: weekly triage, monthly enablement check, quarterly review with [#70](https://github.com/Minprez-JP/Plantjes/issues/70).
 
-1. **Sources to review:** Dependabot alerts, code-scanning alerts, secret-scanning alerts, gitleaks CI results and the non-blocking full `npm audit` report.
-2. **Cadence:** weekly triage; monthly check that Dependabot, CodeQL and secret scanning are enabled and producing results; quarterly threat-model and allowlist review.
-3. **SLA:** High/Critical triaged within 7 days, Medium within 30 days, Low backlogged (from [#12](https://github.com/Minprez-JP/Plantjes/issues/12)).
-4. **Every alert gets a linked `devSecops` project item** with the `security` label, an owner and the correct phase milestone. Move Status to `In Progress` while fixing and `Done` on closure.
-5. **Decisions:** fix, risk-accept, or dismiss as false positive. A fix requires a regression test. A dismissal requires a written rationale, the rule/alert ID, an owner and an expiry/review date.
-6. **Suppression log:** all suppressions and accepted risks are recorded below. The GitHub alert dismissal (reason, comment, owner and review date) is the source of truth for code-scanning alerts; a dated comment at the sink points readers to this log. ESLint rule suppressions use the `plantjes-suppress` comment format above and fail CI on expiry. Do not rely on `codeql[<rule-id>]` JSX comments alone.
-7. **ZAP risk acceptances** live in `security-policies/zap-risk-acceptance.json`. Each entry must include `pluginId`, `site`, `owner`, `reason`, `issue` and an `expires` date in `YYYY-MM-DD`; an optional `alert` narrows it to one alert name. Expired or incomplete entries fail the ZAP gate, and the JSON register starts empty. Add a row to the table below whenever an entry is created or renewed.
-8. **No unmitigated High/Critical finding remains open** when closing the related issue.
+### Sources and routine
+
+1. **Sources to review:**
+   - [Dependabot alerts](https://github.com/Minprez-JP/Plantjes/security/dependabot)
+   - [Code scanning alerts](https://github.com/Minprez-JP/Plantjes/security/code-scanning)
+   - [Secret scanning alerts](https://github.com/Minprez-JP/Plantjes/security/secret-scanning)
+   - CI `gitleaks` job output in [GitHub Actions](https://github.com/Minprez-JP/Plantjes/actions/workflows/ci.yml)
+   - Non-blocking full `npm audit` report in `artifacts/security/npm-audit-all.json` / the `security-reports-*` artifact
+2. **Weekly triage:** review all sources, assign an owner, and record the decision. If an alert needs work, create or link a `devSecops` project item with the `security` label and the correct phase milestone; move Status to `In Progress` while fixing and `Done` on closure.
+3. **Monthly enablement check:** confirm Dependabot, CodeQL/code scanning and secret scanning are enabled and producing results, and that the `gitleaks` CI job is still present/required. Record the check in the table below.
+4. **Quarterly review:** update the threat model, allowlists, tool versions and accepted-risk expiries; link the review to [#70](https://github.com/Minprez-JP/Plantjes/issues/70).
+
+### SLA and decisions
+
+5. **SLA:** High/Critical triaged within 7 days, Medium within 30 days, Low backlogged (from [#12](https://github.com/Minprez-JP/Plantjes/issues/12)).
+6. **Every alert gets a linked `devSecops` project item** with the `security` label, an owner and the correct phase milestone. Move Status to `In Progress` while fixing and `Done` on closure.
+7. **Decisions:** fix, risk-accept, or dismiss as false positive. A fix requires a regression test. A dismissal requires a written rationale, the rule/alert ID, an owner and an expiry/review date.
+8. **Suppression log:** all suppressions and accepted risks are recorded below. The GitHub alert dismissal (reason, comment, owner and review date) is the source of truth for code-scanning alerts; a dated comment at the sink points readers to this log. ESLint rule suppressions use the `plantjes-suppress` comment format above and fail CI on expiry. Do not rely on `codeql[<rule-id>]` JSX comments alone.
+9. **ZAP risk acceptances** live in `security-policies/zap-risk-acceptance.json`. Each entry must include `pluginId`, `site`, `owner`, `reason`, `issue` and an `expires` date in `YYYY-MM-DD`; an optional `alert` narrows it to one alert name. Expired or incomplete entries fail the ZAP gate, and the JSON register starts empty. Add a row to the table below whenever an entry is created or renewed.
+10. **No unmitigated High/Critical finding remains open** when closing the related issue.
+
+### Open security alerts view and filters
+
+- **Project view:** [devSecops #2 — Open security alerts](https://github.com/users/Minprez-JP/projects/2/views/2) (filter: `label:security is:open`).
+- **GitHub Security tabs:** [Dependabot](https://github.com/Minprez-JP/Plantjes/security/dependabot), [Code scanning](https://github.com/Minprez-JP/Plantjes/security/code-scanning?q=is%3Aopen), [Secret scanning](https://github.com/Minprez-JP/Plantjes/security/secret-scanning?query=is%3Aopen).
+- **CLI spot checks:**
+
+```bash
+gh api repos/Minprez-JP/Plantjes/dependabot/alerts?state=open --jq 'length'
+gh api repos/Minprez-JP/Plantjes/code-scanning/alerts?state=open --jq 'length'
+gh api repos/Minprez-JP/Plantjes/secret-scanning/alerts?state=open --jq 'length'
+```
+
+### Monthly enablement check record
+
+| Date | Owner | Dependabot | Code scanning / CodeQL | Secret scanning | gitleaks CI | Open alert counts | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-11-23 | maintainer | Enabled, 0 open | Enabled, 0 open (5 historical: #1-2 fixed, #3-5 dismissed false positives) | Enabled with push protection, 0 open | Present in `ci.yml` and required by `Protect main` | Dependabot 0 / Code scanning 0 / Secret scanning 0 | Initial monthly check exercised for [#25](https://github.com/Minprez-JP/Plantjes/issues/25); evidence in issue comment. |
 
 ## Current suppressions and accepted risks
 
