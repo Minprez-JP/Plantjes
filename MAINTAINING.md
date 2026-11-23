@@ -89,10 +89,33 @@ before importing.
    ```
 3. Update `package.json` and the release notes in
    `.github/release-notes/<version>.md` if the version changes.
-4. Tag the release from `main` and publish the GitHub release.
-5. Verify the built site over HTTPS and confirm the production CSP header/meta
+4. Tag the release from `main` with its immutable patch tag (for example
+   `v1.2.1`) and publish the GitHub release.
+5. Move the rolling minor-line and major tags (`v1.2`, `v1`) to the same commit.
+6. Verify the built site over HTTPS and confirm the production CSP header/meta
    tag and the host response headers described in [SECURITY.md](./SECURITY.md).
-6. After publication, re-check the repository safeguards above.
+7. After publication, re-check the repository safeguards above.
+
+### Tag convention
+
+Plantjes uses rolling tags for release lines plus immutable tags for published
+GitHub releases:
+
+- `v1` — latest stable 1.x release. Move it when a new stable 1.x release is
+  published.
+- `v1.2` — latest release in the 1.2.x line, including pre-releases. Move it
+  when a new 1.2.x pre-release or patch is published.
+- `v1.2.0`, `v1.2.1`, … — immutable provenance tags for each GitHub release.
+  Never move or delete these; the release notes and APK hash are tied to them.
+
+When starting a new minor or major line, create its rolling tag (`v1.3`, `v2`)
+from the first release commit and move the `v1` major tag when the first stable
+release in that line is published. Patch releases only move the existing
+minor-line and major tags; they do not create new rolling tags.
+
+GitHub Releases are one-to-one with Git tags, so two releases cannot share a
+single tag. The rolling tags are aliases for humans and automation; published
+releases stay on immutable patch tags.
 
 ## Pre-public cleanup notes
 
