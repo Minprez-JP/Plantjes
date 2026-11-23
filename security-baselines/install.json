@@ -3,8 +3,8 @@
   "reviewedBy": "Minprez-JP",
   "reviewedOn": "2026-11-23",
   "generatedWith": "Node 26.13.0 / npm 11.20.0",
-  "lockfileSha256": "5743f976195be9dce62f82ab7f914f2b5dbf5ea24dcc493967ce09f14ece0869",
+  "lockfileSha256": "f01e6aec1e4b7016d80ecd1f6188b07ef50bedb3ec4e0c5633317983b4ef7d47",
   "packageListSha256": "919eb56d951dad77ed05ed85cf75dbc7dcc5e8db8c39ca6c718aa862582c5458",
   "packageCount": 349,
-  "note": "Baseline is toolchain-neutral: CI records node/npm versions but compares only content hashes. Node 22/26 equivalence evidence must be re-run for mobile issue #48; any baseline change requires a reviewed PR."
+  "note": "Lockfile hash is computed on LF-normalized content so Windows and Linux agree. Baseline is toolchain-neutral: CI records node/npm versions but compares only content hashes. Node 22/26 equivalence evidence must be re-run for mobile issue #48; any baseline change requires a reviewed PR."
 }

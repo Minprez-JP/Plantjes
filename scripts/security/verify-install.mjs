@@ -23,7 +23,8 @@ const packageList = Object.entries(lock.packages ?? {})
   .sort()
 
 const actual = {
-  lockfileSha256: sha256(lockRaw),
+  // Git stores LF on every platform; normalise Windows checkouts before hashing.
+  lockfileSha256: sha256(lockRaw.toString('utf8').replace(/\r\n/g, '\n')),
   packageListSha256: sha256(`${packageList.join('\n')}\n`),
   packageCount: packageList.length,
 }
@@ -68,6 +69,7 @@ for (const issue of hiddenLockIssues) failures.push(issue)
 const report = {
   generatedAt: new Date().toISOString(),
   baseline: 'security-baselines/install.json',
+  canonicalization: 'package-lock.json CRLF sequences are normalized to LF before hashing',
   expected: {
     lockfileSha256: baseline.lockfileSha256,
     packageListSha256: baseline.packageListSha256,
