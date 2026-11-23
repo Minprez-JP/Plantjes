@@ -53,7 +53,7 @@ beforeAll(async () => {
   html = readFileSync(join(outputDir, 'index.html'), 'utf8')
   document = new JSDOM(html).window.document
   scan = scanBuildDirectory(outputDir, outputDir)
-})
+}, 60_000)
 
 afterAll(() => {
   if (tempRoot) rmSync(tempRoot, { recursive: true, force: true })
