@@ -1,6 +1,7 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
-import { extname, join, relative, resolve } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { commitSha, outputDirectory, root, writeJson } from './common.mjs'
+import { scanBuildDirectory } from './scan-build.mjs'
 
 const dist = resolve(root, 'dist')
 if (!existsSync(dist)) throw new Error('dist/ not found; run npm run build before npm run verify:no-egress')
@@ -11,38 +12,8 @@ const dependencyFindings = (inventory.components ?? [])
   .filter((component) => forbiddenDependency.test(component.name))
   .map((component) => ({ source: 'licence-inventory.json', value: component.name }))
 
-const patterns = {
-  htmlExternalAsset: /\b(?:src|href|action|poster|xlink:href)\s*=\s*["'](?:https?:)?\/\/[^"']+/i,
-  cssExternalUrl: /url\(\s*["']?(?:https?:)?\/\/[^)'"]+/i,
-  jsExternalNetworkCall: /\b(?:fetch|sendBeacon|WebSocket|EventSource)\s*\(\s*["'`](?:https?:|wss?:)?\/\/[^"'`]+/i,
-  jsExternalImport: /\bimport\(\s*["'](?:https?:)?\/\/[^"']+/i,
-}
-
-const findings = [...dependencyFindings]
-const scanned = []
-const scan = (directory) => {
-  for (const entry of readdirSync(directory)) {
-    const path = join(directory, entry)
-    if (statSync(path).isDirectory()) {
-      scan(path)
-      continue
-    }
-    if (!['.html', '.css', '.js', '.svg', '.json'].includes(extname(entry))) continue
-    const text = readFileSync(path, 'utf8')
-    scanned.push(relative(root, path).replaceAll('\\', '/'))
-    for (const [rule, pattern] of Object.entries(patterns)) {
-      const match = text.match(pattern)
-      if (match) {
-        findings.push({
-          source: relative(root, path).replaceAll('\\', '/'),
-          rule,
-          value: match[0].slice(0, 200),
-        })
-      }
-    }
-  }
-}
-scan(dist)
+const { files: scanned, findings: bundleFindings } = scanBuildDirectory(dist, root)
+const findings = [...dependencyFindings, ...bundleFindings]
 
 const report = {
   generatedAt: new Date().toISOString(),
