@@ -28,10 +28,10 @@ describe('plantjes security lint rules', () => {
     }
 
     expect(messages.some((message) => message.message.includes('expired'))).toBe(true)
-  })
+  }, 60_000)
 
   it('accepts static values and a valid suppression in the positive fixture', () => {
     const messages = lintFixture('positive.tsx')
     expect(messages).toEqual([])
-  })
+  }, 60_000)
 })

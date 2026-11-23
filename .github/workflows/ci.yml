@@ -155,6 +155,100 @@ jobs:
           echo "::error::No Chrome/Chromium/Edge binary found on the runner."
           exit 1
 
+  zap-baseline:
+    name: ZAP baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      ZAP_TARGET: http://127.0.0.1:4173
+      # Resolved from ghcr.io/zaproxy/zaproxy:stable on 2026-11-23.
+      ZAP_IMAGE: ghcr.io/zaproxy/zaproxy@sha256:9624669db72f54d86c4b46a7064518bd9bf79d8c61a4c31befa9923489f328af
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build preview bundle
+        run: npm run build
+
+      - name: Create report directory
+        run: |
+          mkdir -p artifacts/zap
+          chmod 777 artifacts/zap
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup ./node_modules/.bin/vite preview --host 127.0.0.1 --port 4173 --strictPort > preview.log 2>&1 &
+          echo $! > preview.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error "$ZAP_TARGET/" > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat preview.log
+          echo "::error::vite preview did not become ready at $ZAP_TARGET"
+          exit 1
+
+      # -I keeps ZAP's generic WARN exit code from masking the explicit
+      # high-risk gate; -silent disables add-on updates and telemetry so the
+      # container only talks to the local preview origin.
+      - name: Run ZAP baseline
+        shell: bash
+        run: |
+          docker run --rm --network host \
+            -v "$PWD/artifacts/zap:/zap/wrk:rw" \
+            "$ZAP_IMAGE" \
+            zap-baseline.py \
+            -t "$ZAP_TARGET" \
+            -m 1 -T 3 -D 5 -I -s \
+            -J zap-report.json \
+            -r zap-report.html \
+            -z "-silent -notel -config api.disablekey=true -config database.recoverylog=false"
+
+      - name: Gate high-risk alerts
+        env:
+          ZAP_TARGET_ORIGIN: ${{ env.ZAP_TARGET }}
+        run: node scripts/security/check-zap-report.mjs artifacts/zap/zap-report.json security-policies/zap-risk-acceptance.json
+
+      - name: Set artifact name
+        id: artifact-name
+        run: |
+          branch="${GITHUB_REF_NAME//[^A-Za-z0-9._-]/-}"
+          echo "name=zap-baseline-${branch}-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload ZAP reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.artifact-name.outputs.name }}
+          path: artifacts/zap/
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Stop local preview
+        if: always()
+        shell: bash
+        run: |
+          if [ -f preview.pid ]; then
+            kill "$(cat preview.pid)" 2>/dev/null || true
+          fi
+
   upload-security-sarif:
     name: Upload security lint SARIF
     needs: verify

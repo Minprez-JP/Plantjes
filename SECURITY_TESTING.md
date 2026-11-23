@@ -25,7 +25,7 @@ npm run security:check
 2. `npm run security:reports` — runs `verify:install` (`npm ci` lockfile/hash
    baseline check), then pinned lint rules, CycloneDX SBOMs, licence policy and
    audit policy.
-3. `npm test` — unit, component, seeded fuzz/property, upload validation, production-build CSP/asset-integrity, and security regression tests, including the lint fixtures. The browser no-egress suite is skipped here with `SKIP_BROWSER_EGRESS=1` and runs in a dedicated CI job.
+3. `npm test` — unit, component, seeded fuzz/property, upload validation, production-build CSP/asset-integrity, ZAP report-gate, and security regression tests, including the lint fixtures. The browser no-egress suite is skipped here with `SKIP_BROWSER_EGRESS=1` and runs in a dedicated CI job.
 4. `npm run build` — type-check and production bundle.
 5. `npm run verify:no-egress` — dependency and built-bundle remote-asset check.
 
@@ -35,6 +35,21 @@ No browser automation package is installed. In CI the dedicated
 `Browser no-egress` job detects the runner browser and runs only this suite;
 locally, run `npm test -- scripts/security/browser-no-egress.test.mjs` without
 `SKIP_BROWSER_EGRESS` to exercise the same path.
+
+The `ZAP baseline` job builds the app, serves `vite preview` on
+`http://127.0.0.1:4173`, and runs the pinned ZAP stable image
+(`ghcr.io/zaproxy/zaproxy@sha256:9624669db72f54d86c4b46a7064518bd9bf79d8c61a4c31befa9923489f328af`)
+with add-on updates and telemetry disabled. JSON and HTML reports are uploaded
+as `zap-baseline-<branch>-<commit>`. `scripts/security/check-zap-report.mjs`
+fails any High/Critical alert unless it has a complete, unexpired entry in
+`security-policies/zap-risk-acceptance.json`; out-of-scope sites also fail. To
+run the gate locally against a saved report:
+
+```bash
+ZAP_TARGET_ORIGIN=http://127.0.0.1:4173 \
+  node scripts/security/check-zap-report.mjs artifacts/zap/zap-report.json \
+  security-policies/zap-risk-acceptance.json
+```
 
 To write the CI-equivalent evidence reports locally:
 
@@ -74,9 +89,12 @@ npm run secret:scan
 | Dependency updates | Dependabot: npm (minor/patch grouped), GitHub Actions (all updates grouped) | PR-based review |
 | Secret scanning | Enabled with push protection (provider patterns); alerts endpoint reachable. Non-provider patterns and validity checks remained disabled via API for this public repository. | Alerts triaged via Security tab |
 | CI secret scan | `ci.yml`: `gitleaks/gitleaks-action` pinned to `e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e` with `GITLEAKS_VERSION=8.30.1` and `.gitleaks.toml` | Yes |
+| Browser no-egress | `ci.yml`: dedicated `Browser no-egress` job drives system Chrome via CDP against a fresh preview build | Yes |
+| ZAP baseline | `ci.yml`: pinned ZAP stable Docker digest scans local `vite preview`; JSON/HTML artifacts plus `check-zap-report.mjs` high-risk gate | Yes |
 
-The added `gitleaks` job has a 10-minute timeout and the SARIF upload job has a
-10-minute timeout; the existing `Audit, test, and build` job stays at 15 minutes.
+The added `gitleaks`, `Browser no-egress` and `ZAP baseline` jobs each have a
+10-minute timeout and the SARIF upload job has a 10-minute timeout; the existing
+`Audit, test, and build` job stays at 15 minutes.
 
 ## DevSecOps board configuration verification (2026-11-22)
 
@@ -216,7 +234,7 @@ and M2 gates whenever sanitisation or photo-input code changes.
 | FR-05 CSP/asset integrity | [#17](https://github.com/Minprez-JP/Plantjes/issues/17) | `scripts/security/production-build.test.mjs` builds a fresh output directory and asserts exact CSP, no sourcemaps, no inline scripts, same-origin resolvable assets, and no CDN/telemetry references |
 | FR-06 Fuzz/import tests | [#18](https://github.com/Minprez-JP/Plantjes/issues/18) | Seeded generators in `src/lib/__tests__/{backup.fuzz,plantForm.fuzz,hostileInput.render}.test.*` cover malformed/oversized `.plantjes` payloads, field limits, numeric ranges, allowlists, and inert rendering of script-like text |
 | FR-07 Upload regression | [#19](https://github.com/Minprez-JP/Plantjes/issues/19) | `src/__tests__/upload.test.tsx` covers the raster MIME allowlist, 15 MB pre-decode rejection, corrupt/truncated blobs, 1600 px downscaling, and object-URL fallbacks |
-| FR-08 ZAP baseline | [#21](https://github.com/Minprez-JP/Plantjes/issues/21) | Planned |
+| FR-08 ZAP baseline | [#21](https://github.com/Minprez-JP/Plantjes/issues/21) | `ci.yml`: pinned ZAP stable digest scans local `vite preview`, uploads JSON/HTML, and `scripts/security/check-zap-report.mjs` fails unaccepted High/Critical alerts with expiry-tracked risk acceptances |
 | FR-09 No-egress test | [#20](https://github.com/Minprez-JP/Plantjes/issues/20) | `scripts/security/browser-no-egress.test.mjs` drives system Chrome via CDP against a fresh production build and asserts local-only requests after load, import, photo add/remove and export |
 | FR-10 CI gates | [#22](https://github.com/Minprez-JP/Plantjes/issues/22) | Planned |
 | FR-11 Board/metrics | [#11](https://github.com/Minprez-JP/Plantjes/issues/11), [#12](https://github.com/Minprez-JP/Plantjes/issues/12), [#25](https://github.com/Minprez-JP/Plantjes/issues/25), [#70](https://github.com/Minprez-JP/Plantjes/issues/70) | Board verified; metrics/SLA documented; quarterly review #70; triage workflow #25 |
@@ -232,7 +250,8 @@ This is the process tracked by [#25](https://github.com/Minprez-JP/Plantjes/issu
 4. **Every alert gets a linked `devSecops` project item** with the `security` label, an owner and the correct phase milestone. Move Status to `In Progress` while fixing and `Done` on closure.
 5. **Decisions:** fix, risk-accept, or dismiss as false positive. A fix requires a regression test. A dismissal requires a written rationale, the rule/alert ID, an owner and an expiry/review date.
 6. **Suppression log:** all suppressions and accepted risks are recorded below. The GitHub alert dismissal (reason, comment, owner and review date) is the source of truth for code-scanning alerts; a dated comment at the sink points readers to this log. ESLint rule suppressions use the `plantjes-suppress` comment format above and fail CI on expiry. Do not rely on `codeql[<rule-id>]` JSX comments alone.
-7. **No unmitigated High/Critical finding remains open** when closing the related issue.
+7. **ZAP risk acceptances** live in `security-policies/zap-risk-acceptance.json`. Each entry must include `pluginId`, `site`, `owner`, `reason`, `issue` and an `expires` date in `YYYY-MM-DD`; an optional `alert` narrows it to one alert name. Expired or incomplete entries fail the ZAP gate, and the JSON register starts empty. Add a row to the table below whenever an entry is created or renewed.
+8. **No unmitigated High/Critical finding remains open** when closing the related issue.
 
 ## Current suppressions and accepted risks
 
@@ -242,6 +261,7 @@ This is the process tracked by [#25](https://github.com/Minprez-JP/Plantjes/issu
 | [Code scanning alert #2](https://github.com/Minprez-JP/Plantjes/security/code-scanning/2) — `js/xss-through-dom`, `PlantDialog.tsx` | False positive | Same path and rationale as above; guard added in `useObjectUrl`, regression test added, and CodeQL marked the alert `fixed` after PR #26. | Maintainer / review by 2027-02-18 ([#24](https://github.com/Minprez-JP/Plantjes/issues/24)) |
 | [PR alert #3](https://github.com/Minprez-JP/Plantjes/security/code-scanning/3), [#4](https://github.com/Minprez-JP/Plantjes/security/code-scanning/4), [#5](https://github.com/Minprez-JP/Plantjes/security/code-scanning/5) — PR-only `js/xss-through-dom` findings | False positive | Same taint path on PR commits; dismissed with the same written rationale and review date. | Maintainer / review by 2027-02-18 ([#24](https://github.com/Minprez-JP/Plantjes/issues/24)) |
 | None currently open | — | `security-policies/audit.json` has `acceptedAdvisories: []` and the 2026-11-23 full audit reports 0 vulnerabilities. The former dev-only `picomatch` ReDoS acceptance is retired because the advisory is no longer reported. | Maintainer / monthly triage ([#25](https://github.com/Minprez-JP/Plantjes/issues/25)) |
+| None currently open | — | `security-policies/zap-risk-acceptance.json` has `entries: []`; the initial ZAP baseline has no accepted High/Critical alerts. | Maintainer / review before each release ([#21](https://github.com/Minprez-JP/Plantjes/issues/21)) |
 
 Security lint baseline: **empty** as of 2026-11-22 (46 files linted, 0 errors,
 0 warnings). There are no active `plantjes-suppress` entries in `src/**`.
