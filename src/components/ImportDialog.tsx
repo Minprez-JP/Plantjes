@@ -1,10 +1,9 @@
-import { useState, type ChangeEvent } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { AlertCircle, Check, FileUp, X } from 'lucide-react'
 import {
   BACKUP_EXTENSION,
-  MAX_BACKUP_BYTES,
-  hasPlantjesExtension,
   parsePlantjes,
+  validateBackupFileInfo,
   type ParsedPlantjesSuccess,
 } from '../lib/backup'
 
@@ -14,11 +13,6 @@ interface ImportDialogProps {
   error: string
   onClose: () => void
   onImport: (backup: ParsedPlantjesSuccess) => Promise<boolean>
-}
-
-function formatSize(bytes: number) {
-  const megabytes = bytes / (1024 * 1024)
-  return `${Math.round(megabytes)} MB`
 }
 
 export function ImportDialog({
@@ -32,35 +26,42 @@ export function ImportDialog({
   const [parsed, setParsed] = useState<ParsedPlantjesSuccess | null>(null)
   const [fileError, setFileError] = useState('')
   const [importing, setImporting] = useState(false)
+  const [reading, setReading] = useState(false)
+  const readId = useRef(0)
   const message = fileError || error
 
   async function readFile(file: File | undefined) {
+    const requestId = ++readId.current
     setFileError('')
     setParsed(null)
     setFileName('')
-
-    if (!file) return
-    setFileName(file.name)
-
-    if (!hasPlantjesExtension(file.name)) {
-      setFileError(`Choose a file that ends in ${BACKUP_EXTENSION}.`)
-      return
-    }
-
-    if (file.size > MAX_BACKUP_BYTES) {
-      setFileError(`Backups must be ${formatSize(MAX_BACKUP_BYTES)} or smaller.`)
-      return
-    }
+    setReading(true)
 
     try {
-      const result = parsePlantjes(await file.text())
+      if (!file) return
+      setFileName(file.name)
+
+      const check = validateBackupFileInfo(file.name, file.size)
+      if (!check.ok) {
+        setFileError(check.error)
+        return
+      }
+
+      const text = await file.text()
+      if (requestId !== readId.current) return
+
+      const result = parsePlantjes(text, { byteLength: file.size })
       if (!result.ok) {
         setFileError(result.error)
         return
       }
       setParsed(result)
     } catch {
-      setFileError('The file could not be read. Try choosing it again.')
+      if (requestId === readId.current) {
+        setFileError('The file could not be read. Try choosing it again.')
+      }
+    } finally {
+      if (requestId === readId.current) setReading(false)
     }
   }
 
@@ -170,7 +171,7 @@ export function ImportDialog({
             <button
               type="button"
               className="button button-primary"
-              disabled={!parsed || importing}
+              disabled={!parsed || reading || importing}
               onClick={() => void confirmImport()}
             >
               <FileUp size={16} /> {importing ? 'Importing…' : 'Replace collection'}

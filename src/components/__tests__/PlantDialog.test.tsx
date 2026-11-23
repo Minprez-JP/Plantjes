@@ -1,19 +1,23 @@
 // @vitest-environment jsdom
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { PlantFormSubmission } from '../../types'
 import { PlantDialog } from '../PlantDialog'
 
-function renderDialog() {
+function renderDialog(
+  onSave: (submission: PlantFormSubmission) => Promise<void> = vi.fn().mockResolvedValue(undefined),
+) {
   render(
     <PlantDialog
       plant={null}
       locations={[]}
       error=""
       onClose={vi.fn()}
-      onSave={vi.fn().mockResolvedValue(undefined)}
+      onSave={onSave}
       onAddLocation={vi.fn().mockResolvedValue({ ok: false, error: 'Not used' })}
     />,
   )
+  return { onSave }
 }
 
 beforeAll(() => {
@@ -94,5 +98,26 @@ describe('PlantDialog tabs', () => {
     await waitFor(() => expect(document.activeElement).toBe(minTemperature))
     expect(minTemperature.getAttribute('aria-invalid')).toBe('true')
     expect(screen.getByRole('alert').textContent).toContain('Environment tab')
+  })
+
+  it('ignores a second submit while a save is still in flight', async () => {
+    let finishSave!: () => void
+    const onSave = vi.fn(() => new Promise<void>((resolve) => { finishSave = resolve }))
+    renderDialog(onSave)
+
+    const name = screen.getByRole('textbox', { name: /plant name/i })
+    fireEvent.change(name, { target: { value: 'Monstera' } })
+    const form = name.closest('form')!
+
+    fireEvent.submit(form)
+    fireEvent.submit(form)
+
+    expect(onSave).toHaveBeenCalledTimes(1)
+    expect((screen.getByRole('button', { name: /saving/i }) as HTMLButtonElement).disabled).toBe(true)
+
+    finishSave()
+    await waitFor(() => {
+      expect((screen.getByRole('button', { name: /add plant/i }) as HTMLButtonElement).disabled).toBe(false)
+    })
   })
 })

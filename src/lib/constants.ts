@@ -35,6 +35,10 @@ export const MAX_WATERING_DAYS = 365
 export const MAX_FEEDING_DAYS = 365
 export const DEFAULT_FEEDING_DAYS = 30
 
+/** Plausible stored temperature bounds in °C. */
+export const MIN_TEMPERATURE_C = -100
+export const MAX_TEMPERATURE_C = 100
+
 /** Stored photos at or above this size are re-encoded once on startup. */
 export const STORED_IMAGE_OPTIMIZE_BYTES = 256 * 1024
 

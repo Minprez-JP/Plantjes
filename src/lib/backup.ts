@@ -7,7 +7,9 @@ import {
   MAX_FEEDING_DAYS,
   MAX_IMAGE_BYTES,
   MAX_PLANT_HEIGHT_CM,
+  MAX_TEMPERATURE_C,
   MAX_WATERING_DAYS,
+  MIN_TEMPERATURE_C,
   SOIL_COMPOSITION_OPTIONS,
   SOIL_DRAINAGE_OPTIONS,
   SOIL_PH_OPTIONS,
@@ -15,6 +17,7 @@ import {
   TOXICITY_OPTIONS,
 } from './constants'
 import { normalizeLocationName, sortLocations, validateLocationName } from './locations'
+import { normalizeNote } from './notes'
 import { isWinterHardy } from './plants'
 
 export const BACKUP_FORMAT = 'plantjes'
@@ -57,8 +60,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function compareNames(first: string, second: string) {
-  return first.localeCompare(second, undefined, { sensitivity: 'base', numeric: true })
-    || first.localeCompare(second)
+  return first.localeCompare(second, 'en', { sensitivity: 'base', numeric: true })
+    || first.localeCompare(second, 'en')
 }
 
 /** Location names that will be written to a backup, deduplicated and sorted. */
@@ -108,12 +111,34 @@ export async function buildPlantjesDocument(
   locations: readonly PlantLocation[],
   exportedAt = new Date(),
 ): Promise<PlantjesDocument> {
+  if (plants.length > MAX_BACKUP_PLANTS) {
+    fail(`A backup cannot contain more than ${MAX_BACKUP_PLANTS} plants.`)
+  }
+
+  const exportedLocations = listBackupLocations(plants, locations)
+  if (exportedLocations.length > MAX_BACKUP_LOCATIONS) {
+    fail(`A backup cannot contain more than ${MAX_BACKUP_LOCATIONS} locations.`)
+  }
+
+  // Convert sequentially so a large journal never holds every base64 copy in
+  // memory at once, and stop before the document exceeds the import cap.
+  const exportedPlants: PlantjesPlant[] = []
+  let totalImageBytes = 0
+  for (const plant of plants) {
+    const exported = await toExportPlant(plant)
+    if (exported.image) totalImageBytes += exported.image.length
+    if (totalImageBytes > MAX_BACKUP_BYTES) {
+      fail(`The embedded photos exceed the ${Math.round(MAX_BACKUP_BYTES / (1024 * 1024))} MB backup limit.`)
+    }
+    exportedPlants.push(exported)
+  }
+
   return {
     format: BACKUP_FORMAT,
     version: BACKUP_VERSION,
     exportedAt: exportedAt.toISOString(),
-    locations: listBackupLocations(plants, locations),
-    plants: await Promise.all(plants.map(toExportPlant)),
+    locations: exportedLocations,
+    plants: exportedPlants,
   }
 }
 
@@ -160,6 +185,22 @@ export function normalizeBackupName(raw: string): BackupNameResult {
 
 export function hasPlantjesExtension(fileName: string) {
   return fileName.trim().toLowerCase().endsWith(BACKUP_EXTENSION)
+}
+
+export type BackupFileCheck = { ok: true } | { ok: false; error: string }
+
+/** Pure extension/size check shared by the import dialog and fuzz tests. */
+export function validateBackupFileInfo(fileName: string, size: number): BackupFileCheck {
+  if (!hasPlantjesExtension(fileName)) {
+    return { ok: false, error: `Choose a file that ends in ${BACKUP_EXTENSION}.` }
+  }
+  if (!Number.isFinite(size) || size < 0) {
+    return { ok: false, error: 'The file size could not be read.' }
+  }
+  if (size > MAX_BACKUP_BYTES) {
+    return { ok: false, error: `Backups must be ${Math.round(MAX_BACKUP_BYTES / (1024 * 1024))} MB or smaller.` }
+  }
+  return { ok: true }
 }
 
 function readText(
@@ -210,19 +251,26 @@ function readBoolean(value: unknown, label: string, fallback = false) {
 
 function readOptionalInteger(value: unknown, label: string) {
   if (value === undefined || value === null) return undefined
-  if (typeof value !== 'number' || !Number.isInteger(value)) {
-    fail(`${label} must be a whole number.`)
+  if (typeof value === 'number' && Number.isInteger(value)) return value
+  if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) {
+    return Number(value.trim())
   }
-  return value
+  fail(`${label} must be a whole number.`)
 }
+
+const ISO_UTC_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 
 function readDate(value: unknown, label: string, fallback?: string) {
   if (value === undefined || value === null || value === '') {
     if (fallback !== undefined) return fallback
     fail(`${label} is missing.`)
   }
-  if (typeof value !== 'string' || Number.isNaN(Date.parse(value))) {
-    fail(`${label} is not a valid date.`)
+  if (
+    typeof value !== 'string'
+    || !ISO_UTC_DATE.test(value)
+    || Number.isNaN(Date.parse(value))
+  ) {
+    fail(`${label} is not a valid ISO UTC date.`)
   }
   return value
 }
@@ -339,6 +387,14 @@ function readPlant(
 
   const minTemperature = readOptionalInteger(value.minTemperature, `${label} minimum temperature`)
   const maxTemperature = readOptionalInteger(value.maxTemperature, `${label} maximum temperature`)
+  if (
+    (minTemperature !== undefined
+      && (minTemperature < MIN_TEMPERATURE_C || minTemperature > MAX_TEMPERATURE_C))
+    || (maxTemperature !== undefined
+      && (maxTemperature < MIN_TEMPERATURE_C || maxTemperature > MAX_TEMPERATURE_C))
+  ) {
+    fail(`${label} has a temperature outside the supported range.`)
+  }
   if (minTemperature !== undefined && maxTemperature !== undefined && minTemperature > maxTemperature) {
     fail(`${label} has a minimum temperature above its maximum.`)
   }
@@ -392,7 +448,7 @@ function readPlant(
       && readBoolean(value.draftSensitive, `${label} draft-sensitivity flag`),
     minHumidity,
     maxHumidity,
-    notes: readText(value, 'notes', `${label} notes`, TEXT_LIMITS.notes),
+    notes: normalizeNote(readText(value, 'notes', `${label} notes`, TEXT_LIMITS.notes)),
     imageBlob: image?.blob,
     imageOptimized: image?.optimized ?? false,
     createdAt: readDate(value.createdAt, `${label} created date`),
@@ -413,8 +469,26 @@ function readPlant(
   }
 }
 
+export interface ParsePlantjesOptions {
+  /** Injectable clock for deterministic tests. */
+  now?: Date
+  /** Exact byte length supplied by callers that already read the file. */
+  byteLength?: number
+}
+
 /** Parses and defensively validates a `.plantjes` JSON payload. */
-export function parsePlantjes(text: string): ParsedPlantjes {
+export function parsePlantjes(text: string, options: ParsePlantjesOptions = {}): ParsedPlantjes {
+  // UTF-8 bytes are always at least the UTF-16 code-unit count, so this cheap
+  // check rejects definitely oversized payloads before allocating a copy.
+  if (text.length > MAX_BACKUP_BYTES) {
+    return { ok: false, error: `Backups must be ${Math.round(MAX_BACKUP_BYTES / (1024 * 1024))} MB or smaller.` }
+  }
+
+  const byteLength = options.byteLength ?? new TextEncoder().encode(text).length
+  if (byteLength > MAX_BACKUP_BYTES) {
+    return { ok: false, error: `Backups must be ${Math.round(MAX_BACKUP_BYTES / (1024 * 1024))} MB or smaller.` }
+  }
+
   let data: unknown
 
   try {
@@ -439,7 +513,7 @@ export function parsePlantjes(text: string): ParsedPlantjes {
     }
 
     const locations = readLocations(data.locations)
-    const now = new Date().toISOString()
+    const now = (options.now ?? new Date()).toISOString()
     let imageCount = 0
 
     const plants = data.plants.map((value, index) => {

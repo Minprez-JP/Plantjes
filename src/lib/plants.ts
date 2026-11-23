@@ -99,8 +99,8 @@ export function listPlantLocations(plants: readonly Plant[]): string[] {
   }
 
   return [...names.values()].sort((a, b) => (
-    a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true })
-    || a.localeCompare(b)
+    a.localeCompare(b, 'en', { sensitivity: 'base', numeric: true })
+    || a.localeCompare(b, 'en')
   ))
 }
 

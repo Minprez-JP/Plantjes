@@ -22,12 +22,12 @@ npm run security:check
 `npm run security:check` runs:
 
 1. `npm audit --audit-level=high --omit=dev` — blocking runtime dependency gate.
-2. `npm run verify:install` — `npm ci` lockfile/hash baseline check.
-3. `npm run security:reports` — pinned lint rules, CycloneDX SBOMs, licence
-   policy and audit policy.
-4. `npm test` — unit, component and security regression tests, including the lint fixtures.
-5. `npm run build` — type-check and production bundle.
-6. `npm run verify:no-egress` — dependency and built-bundle remote-asset check.
+2. `npm run security:reports` — runs `verify:install` (`npm ci` lockfile/hash
+   baseline check), then pinned lint rules, CycloneDX SBOMs, licence policy and
+   audit policy.
+3. `npm test` — unit, component and security regression tests, including the lint fixtures.
+4. `npm run build` — type-check and production bundle.
+5. `npm run verify:no-egress` — dependency and built-bundle remote-asset check.
 
 To write the CI-equivalent evidence reports locally:
 

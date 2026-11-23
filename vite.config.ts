@@ -1,23 +1,8 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import { CONTENT_SECURITY_POLICY } from './src/lib/contentSecurityPolicy.ts'
 
-/**
- * The app loads no third-party code or assets, so production can run under a
- * strict same-origin policy. `frame-ancestors` is intentionally omitted: it is
- * ignored in a meta tag and must be sent as a response header by the host.
- */
-const CONTENT_SECURITY_POLICY = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self'",
-  "img-src 'self' data: blob:",
-  "font-src 'self'",
-  "connect-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  'upgrade-insecure-requests',
-].join('; ')
+export { CONTENT_SECURITY_POLICY } from './src/lib/contentSecurityPolicy.ts'
 
 function securityMeta(): Plugin {
   return {

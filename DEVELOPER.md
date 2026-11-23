@@ -78,7 +78,7 @@ Plant fields are:
 | `id` | IndexedDB-generated record ID; optional before insertion. |
 | `name`, `species` | Plant's display name and species/variety. |
 | `environment`, `location` | Indoor/outdoor classification and the display name of a saved location. `location` is stored as a plain string so plant records do not need a migration; an empty string means no location. |
-| `light`, `minTemperature`, `maxTemperature`, `minHumidity`, `maxHumidity` | Recorded care preferences; temperatures are optional whole-number Celsius values and humidity is an optional whole-number percentage range. Neither is measured automatically. |
+| `light`, `minTemperature`, `maxTemperature`, `minHumidity`, `maxHumidity` | Recorded care preferences; temperatures are optional whole-number Celsius values from -100 to 100 and humidity is an optional whole-number percentage range. Neither is measured automatically. |
 | `winterHardy` | Derived boolean: `true` when `minTemperature` is set and `<= -10`, otherwise `false`. It is stored with every plant but is only displayed on outdoor plant cards that have a minimum temperature; it is not an editable form field. |
 | `draftSensitive` | Boolean set from the indoor-only "Not resistant to drafts" checkbox. It is always `false` for outdoor plants and is only displayed on indoor cards when `true`. |
 | `waterEveryDays` | Positive integer interval used for due calculations. |

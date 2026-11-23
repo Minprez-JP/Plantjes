@@ -10,7 +10,9 @@ import {
   MAX_FEEDING_DAYS,
   MAX_IMAGE_BYTES,
   MAX_PLANT_HEIGHT_CM,
+  MAX_TEMPERATURE_C,
   MAX_WATERING_DAYS,
+  MIN_TEMPERATURE_C,
   SOIL_COMPOSITION_OPTIONS,
   SOIL_DRAINAGE_OPTIONS,
   SOIL_PH_OPTIONS,
@@ -41,7 +43,7 @@ export const EMPTY_PLANT_FORM: PlantFormValues = {
 }
 
 const TEMPERATURE_ERROR =
-  'Temperature must use whole numbers, with the minimum no higher than the maximum.'
+  `Temperature must be a whole number from ${MIN_TEMPERATURE_C} to ${MAX_TEMPERATURE_C} °C, with the minimum no higher than the maximum.`
 const HUMIDITY_ERROR =
   'Humidity must be a whole number from 0 to 100, with the minimum no higher than the maximum.'
 const FEEDING_INTERVAL_ERROR =
@@ -79,7 +81,9 @@ function fail(error: string, tab: PlantFormTab, field: string): ParsedPlantForm 
 }
 
 function optionalNumber(value: FormDataEntryValue | null) {
-  return value === null || value === '' ? undefined : Number(value)
+  if (value === null || value === '') return undefined
+  if (typeof value !== 'string' || !/^-?\d+$/.test(value.trim())) return Number.NaN
+  return Number(value.trim())
 }
 
 function isOutOfRange(value: number | undefined, min: number, max: number) {
@@ -122,6 +126,13 @@ export type ParsedCareForm =
 
 /** Validates the optional pruning fields edited by the care dialog. */
 export function parseCareForm(data: FormData): ParsedCareForm {
+  for (const field of ['pruningTime', 'pruningNotes'] as const) {
+    const value = data.get(field)
+    if (value !== null && typeof value !== 'string') {
+      return { ok: false, error: `${field === 'pruningTime' ? 'When to prune' : 'Pruning notes'} must be text.`, field }
+    }
+  }
+
   const pruningTime = String(data.get('pruningTime') ?? '').trim()
   const pruningNotes = String(data.get('pruningNotes') ?? '').trim()
   const expectedHeightCm = optionalNumber(data.get('expectedHeightCm'))
@@ -186,6 +197,13 @@ export function parsePlantForm(
   data: FormData,
   locations: readonly PlantLocation[] = [],
 ): ParsedPlantForm {
+  for (const [field, label, , tab] of TEXT_FIELDS) {
+    const value = data.get(field)
+    if (value !== null && typeof value !== 'string') {
+      return fail(`${label} must be text.`, tab, field)
+    }
+  }
+
   const name = String(data.get('name') ?? '').trim()
   if (!name) return fail('Plant name is required.', 'main', 'name')
 
@@ -220,6 +238,12 @@ export function parsePlantForm(
   }
   if (maxTemperature !== undefined && !Number.isInteger(maxTemperature)) {
     return fail(TEMPERATURE_ERROR, 'environment', 'maxTemperature')
+  }
+  if (
+    isOutOfRange(minTemperature, MIN_TEMPERATURE_C, MAX_TEMPERATURE_C)
+    || isOutOfRange(maxTemperature, MIN_TEMPERATURE_C, MAX_TEMPERATURE_C)
+  ) {
+    return fail(TEMPERATURE_ERROR, 'environment', 'minTemperature')
   }
   if (isInvertedRange(minTemperature, maxTemperature)) {
     return fail(TEMPERATURE_ERROR, 'environment', 'minTemperature')

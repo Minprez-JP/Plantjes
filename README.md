@@ -6,7 +6,7 @@
 
 - Add plants with a name, species or variety, indoor/outdoor setting, location, light preference, watering interval, optional feeding schedule, temperature range, humidity, edibility, and an optional photo upload.
 - Choose a room or spot from a reusable location list. Add a new location inline from the plant form; newly added locations are saved on this device and matched case-insensitively so duplicates are not created.
-- Record preferred minimum and maximum temperatures in °C as whole numbers, including negative values. Outdoor plants are marked winter-hardy when their minimum is -10°C or lower.
+- Record preferred minimum and maximum temperatures in °C as whole numbers from -100 to 100, including negative values. Outdoor plants are marked winter-hardy when their minimum is -10°C or lower.
 - Read and edit each plant's note from the information button at the bottom-left of its photo. The note dialog keeps line breaks, warns when a note is empty, and saves up to 2,000 characters.
 - Add optional pruning details — when to prune, expected mature height, height after pruning, and pruning notes — on the Care tab of the plant form. When *when to prune* is filled, a scissors button on the plant photo opens a read-only pruning details dialog with an option to edit; pruning details are not repeated in the card text. Add soil details — composition, pH, and drainage — on the Soil tab. The card shows a compact composition · pH · drainage summary when those values are set.
 - View each plant's next watering status, feeding schedule, care conditions, and location.
@@ -30,7 +30,7 @@ Watering and feeding reminders are calculated from each interval and the last ti
 
 ## Mobile APK release
 
-This repository builds both the desktop web app and the local-run Android APK from the protected `main` branch. Shared React/Vite code and the Capacitor `android/` shell live in the same tree; mobile work uses short-lived topic branches merged into `main`. See [MOBILE_RELEASE.md](./MOBILE_RELEASE.md) for the scope, requirements, process, task register, timeline, risk log and migration log, and for the link to project board #3.
+This repository currently builds the desktop web app from the protected `main` branch. The local-run Android APK is in the planning/feasibility stage: no Capacitor `android/` scaffold exists yet. Mobile work will use short-lived topic branches merged into `main`; see [MOBILE_RELEASE.md](./MOBILE_RELEASE.md) for the scope, requirements, process, task register, timeline, risk log and migration log, and for the link to project board #3.
 
 ## Run locally
 

@@ -57,7 +57,7 @@ export function findLocationByName(
 /** Returns a new alphabetically sorted list without mutating the input. */
 export function sortLocations(locations: readonly PlantLocation[]): PlantLocation[] {
   return locations.slice().sort((a, b) => (
-    a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true })
-    || a.name.localeCompare(b.name)
+    a.name.localeCompare(b.name, 'en', { sensitivity: 'base', numeric: true })
+    || a.name.localeCompare(b.name, 'en')
   ))
 }
