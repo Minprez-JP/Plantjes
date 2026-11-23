@@ -41,6 +41,11 @@ committed `package-lock.json`, and full license texts are committed under
 | `react`, `react-dom` | MIT | [`licenses/React-MIT.txt`](./licenses/React-MIT.txt) |
 | `dexie` | Apache-2.0 | [`licenses/Dexie-Apache-2.0.txt`](./licenses/Dexie-Apache-2.0.txt) |
 | `lucide-react` | ISC | [`licenses/Lucide-ISC.txt`](./licenses/Lucide-ISC.txt) |
+| `@capacitor/core` and generated Android runtime | MIT | [`licenses/Capacitor-MIT.txt`](./licenses/Capacitor-MIT.txt) |
+
+`@capacitor/cli` and `@capacitor/android` are also MIT-licensed and use the same
+license text; the CLI is build-time only, while the Android platform runtime is
+packaged into the APK.
 
 Build and test tooling (`vite`, `typescript`, `vitest`, `jsdom`,
 `@vitejs/plugin-react`, `@testing-library/react`, and the React type packages)
