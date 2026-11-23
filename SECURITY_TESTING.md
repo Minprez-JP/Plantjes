@@ -25,7 +25,7 @@ npm run security:check
 2. `npm run security:reports` — runs `verify:install` (`npm ci` lockfile/hash
    baseline check), then pinned lint rules, CycloneDX SBOMs, licence policy and
    audit policy.
-3. `npm test` — unit, component, production-build CSP/asset-integrity, and security regression tests, including the lint fixtures.
+3. `npm test` — unit, component, seeded fuzz/property, production-build CSP/asset-integrity, and security regression tests, including the lint fixtures.
 4. `npm run build` — type-check and production bundle.
 5. `npm run verify:no-egress` — dependency and built-bundle remote-asset check.
 
@@ -207,7 +207,7 @@ and M2 gates whenever sanitisation or photo-input code changes.
 | FR-03 SCA/SBOM/licences | [#15](https://github.com/Minprez-JP/Plantjes/issues/15) | Blocking audit + install baseline, pinned CycloneDX SBOMs, licence policy, generated notices |
 | FR-04 Secret scanning | [#16](https://github.com/Minprez-JP/Plantjes/issues/16) | GitHub secret scanning + push protection; CI gitleaks pinned action and Docker-reproducible local scan |
 | FR-05 CSP/asset integrity | [#17](https://github.com/Minprez-JP/Plantjes/issues/17) | `scripts/security/production-build.test.mjs` builds a fresh output directory and asserts exact CSP, no sourcemaps, no inline scripts, same-origin resolvable assets, and no CDN/telemetry references |
-| FR-06 Fuzz/import tests | [#18](https://github.com/Minprez-JP/Plantjes/issues/18) | Planned |
+| FR-06 Fuzz/import tests | [#18](https://github.com/Minprez-JP/Plantjes/issues/18) | Seeded generators in `src/lib/__tests__/{backup.fuzz,plantForm.fuzz,hostileInput.render}.test.*` cover malformed/oversized `.plantjes` payloads, field limits, numeric ranges, allowlists, and inert rendering of script-like text |
 | FR-07 Upload regression | [#19](https://github.com/Minprez-JP/Plantjes/issues/19) | Planned |
 | FR-08 ZAP baseline | [#21](https://github.com/Minprez-JP/Plantjes/issues/21) | Planned |
 | FR-09 No-egress test | [#20](https://github.com/Minprez-JP/Plantjes/issues/20) | Planned |
