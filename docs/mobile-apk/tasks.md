@@ -12,7 +12,7 @@ Source of truth for live status: [project board #3](https://github.com/users/Min
 | [#35](https://github.com/Minprez-JP/Plantjes/issues/35) | Adapt Vite, CSP and asset loading for Android WebView | M2 | Mobile M2 | 2026-12-03 | 2026-12-10 | M | High | #34 | Backlog |
 | [#36](https://github.com/Minprez-JP/Plantjes/issues/36) | Verify Dexie persistence and backup import/export on device | M2 | Mobile M2 | 2026-12-03 | 2026-12-14 | L | High | #34 | Backlog |
 | [#37](https://github.com/Minprez-JP/Plantjes/issues/37) | Verify photo input and object-URL pipeline on Android | M2 | Mobile M2 | 2026-12-03 | 2026-12-14 | L | High | #34 | Backlog |
-| [#38](https://github.com/Minprez-JP/Plantjes/issues/38) | Mobile UX pass for viewport, safe areas and Android back button | M2 | Mobile M2 | 2026-12-07 | 2026-12-16 | M | Medium | #34 | Backlog |
+| [#38](https://github.com/Minprez-JP/Plantjes/issues/38) | Mobile UX pass for viewport, safe areas and Android back button | M2 | Mobile M2 | 2026-12-07 | 2026-12-16 | M | Medium | #34 | Done (PR [#89](https://github.com/Minprez-JP/Plantjes/pull/89), `c3c2dff`) |
 | [#39](https://github.com/Minprez-JP/Plantjes/issues/39) | Harden Android permissions and network policy | M2 | Mobile M2 | 2026-12-07 | 2026-12-16 | M | High | #34 | Backlog |
 | [#40](https://github.com/Minprez-JP/Plantjes/issues/40) | Produce debug APK and local install runbook | M3 | Mobile M3 | 2026-12-17 | 2026-12-23 | M | High | #35–#39 | Backlog |
 | [#41](https://github.com/Minprez-JP/Plantjes/issues/41) | Implement release signing, versioning and reproducible release build | M3 | Mobile M3 | 2026-12-21 | 2026-12-30 | L | High | #40 | Backlog |
@@ -40,7 +40,7 @@ Source of truth for live status: [project board #3](https://github.com/users/Min
 
 - Adapt asset loading and CSP (#35).
 - Verify Dexie and backups (#36), photos/object URLs (#37), permissions/network (#39).
-- Complete phone UX and Android back-button pass (#38).
+- Complete phone UX and Android back-button pass (#38, PR #89 `c3c2dff`).
 - Add native-only navigation with dedicated collection, watering, feeding and account screens (#84).
 
 ### M3 — Build signing and local release
