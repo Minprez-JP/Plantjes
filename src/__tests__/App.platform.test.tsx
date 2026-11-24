@@ -129,7 +129,7 @@ describe('App platform shell', () => {
     render(<App />)
 
     expect(screen.queryByText('Watering list')).toBeNull()
-    expect(screen.getByText('THE COLLECTION')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /water all/i })).toBeNull()
 
     const nav = screen.getByRole('navigation', { name: /main navigation/i })
     fireEvent.click(within(nav).getByRole('button', { name: /water/i }))
@@ -161,6 +161,33 @@ describe('App platform shell', () => {
     expect(screen.queryByText('Monstera')).toBeNull()
   })
 
+  it('keeps the compact collection toolbar free of bulk watering controls', () => {
+    vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
+    render(<App />)
+
+    expect(screen.getByText('2 of 2 plants · 1 needs water')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /water due/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /water all/i })).toBeNull()
+    expect(screen.getByRole('button', { name: /open plant filters/i })).toBeTruthy()
+  })
+
+  it('applies secondary filters from the mobile filter sheet', () => {
+    vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: /open plant filters/i }))
+    const dialog = screen.getByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText(/filter by care/i), {
+      target: { value: 'Needs water' },
+    })
+
+    expect(screen.getByText('Monstera')).toBeTruthy()
+    expect(screen.queryByText('Ficus')).toBeNull()
+
+    fireEvent.click(within(dialog).getByRole('button', { name: /show 1 plant/i }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
   it('exposes import and export on the account screen', () => {
     vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
     render(<App />)
@@ -182,7 +209,8 @@ describe('App platform shell', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { name: /feed list/i })).toBeTruthy()
-    expect(screen.queryByText('THE COLLECTION')).toBeNull()
+    const nav = screen.getByRole('navigation', { name: /main navigation/i })
+    expect(within(nav).getByRole('button', { name: /feed/i }).getAttribute('aria-current')).toBe('page')
   })
 
   it('consumes the Android back event to return from a care screen', () => {
@@ -198,8 +226,8 @@ describe('App platform shell', () => {
 
     expect(backEvent.defaultPrevented).toBe(true)
     expect(window.location.hash).toBe('#/collection')
-    expect(screen.getByText('THE COLLECTION')).toBeTruthy()
     expect(screen.queryByRole('heading', { name: /water list/i })).toBeNull()
+    expect(within(nav).getByRole('button', { name: /collection/i }).getAttribute('aria-current')).toBe('page')
   })
 
   it('leaves the Android back event unhandled on the root screen', () => {
@@ -223,6 +251,20 @@ describe('App platform shell', () => {
 
     expect(backEvent.defaultPrevented).toBe(true)
     expect(journal.closeImport).toHaveBeenCalledTimes(1)
+  })
+
+  it('consumes the Android back event to close the mobile filter sheet', () => {
+    vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: /open plant filters/i }))
+    expect(screen.getByRole('dialog')).toBeTruthy()
+
+    const backEvent = new CustomEvent('plantjes:back', { cancelable: true })
+    fireEvent(window, backEvent)
+
+    expect(backEvent.defaultPrevented).toBe(true)
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('closes a dialog before leaving a care screen on Android back', () => {

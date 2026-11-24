@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Droplets, Plus, Search } from 'lucide-react'
+import { Droplets, Plus, Search, SlidersHorizontal, X } from 'lucide-react'
 import { CARE_FILTERS } from '../lib/constants'
 import { filterPlantRows, isWateringDue, listPlantLocations } from '../lib/plants'
 import type { CareFilter, Filter, PlantFilters, PlantRow } from '../types'
@@ -27,6 +27,8 @@ interface CollectionSectionProps {
   onWaterMany: (plants: readonly Plant[]) => Promise<boolean>
   onFertilize: (plant: Plant) => void
   onDelete: (plant: Plant) => void
+  /** The mobile shell uses a denser, bottom-sheet based toolbar. */
+  mobile?: boolean
 }
 
 export function CollectionSection({
@@ -41,12 +43,14 @@ export function CollectionSection({
   onWaterMany,
   onFertilize,
   onDelete,
+  mobile = false,
 }: CollectionSectionProps) {
   const [filter, setFilter] = useState<Filter>('All plants')
   const [location, setLocation] = useState('')
   const [care, setCare] = useState<CareFilter>('Any care')
   const [query, setQuery] = useState('')
   const [careNotice, setCareNotice] = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const locationOptions = useMemo<FilterSelectOption[]>(() => [
     ANY_LOCATION,
@@ -74,12 +78,30 @@ export function CollectionSection({
     [visibleRows],
   )
 
+  const activeFilterCount = [
+    filter !== 'All plants',
+    location !== '',
+    care !== 'Any care',
+    query !== '',
+  ].filter(Boolean).length
+
+  useEffect(() => {
+    if (!mobile || !filtersOpen) return
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setFiltersOpen(false)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [filtersOpen, mobile])
+
   const clearFilters = useCallback(() => {
     setQuery('')
     setFilter('All plants')
     setLocation('')
     setCare('Any care')
     setCareNotice('')
+    setFiltersOpen(false)
   }, [])
 
   const waterDue = useCallback(async () => {
@@ -110,62 +132,112 @@ export function CollectionSection({
   }, [onWaterMany, visibleRows])
 
   return (
-    <section className="plant-section">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">THE COLLECTION</p>
-          <h2>Your plants <span>{rows.length.toString().padStart(2, '0')}</span></h2>
+    <section className={mobile ? 'plant-section mobile-collection' : 'plant-section'}>
+      {!mobile && (
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">THE COLLECTION</p>
+            <h2>Your plants <span>{rows.length.toString().padStart(2, '0')}</span></h2>
+          </div>
+          <button className="button button-outline desktop-add" onClick={onAdd}>
+            <Plus size={16} /> Add plant
+          </button>
         </div>
-        <button className="button button-outline desktop-add" onClick={onAdd}>
-          <Plus size={16} /> Add plant
-        </button>
-      </div>
+      )}
 
-      <div className="collection-tools">
-        <div className="collection-filters">
-          <FilterTabs
-            value={filter}
-            onChange={(value) => {
-              setFilter(value)
-              setCareNotice('')
-            }}
-          />
-          <FilterSelect
-            label="Filter by location"
-            value={location}
-            options={locationOptions}
-            onChange={(value) => {
-              setLocation(value)
-              setCareNotice('')
-            }}
-          />
-          <FilterSelect
-            label="Filter by care"
-            value={care}
-            options={CARE_OPTIONS}
-            onChange={(value) => {
-              setCare(value)
-              setCareNotice('')
-            }}
-          />
+      {mobile ? (
+        <>
+          <div className="mobile-collection-tools">
+            <label className="search-box">
+              <Search size={18} aria-hidden="true" />
+              <input
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value)
+                  setCareNotice('')
+                }}
+                placeholder="Search plants"
+                aria-label="Find a plant"
+              />
+            </label>
+            <div className="mobile-filter-row">
+              <FilterTabs
+                value={filter}
+                onChange={(value) => {
+                  setFilter(value)
+                  setCareNotice('')
+                }}
+              />
+              <button
+                type="button"
+                className={activeFilterCount > 0 ? 'mobile-filter-button is-active' : 'mobile-filter-button'}
+                aria-label="Open plant filters"
+                aria-haspopup="dialog"
+                onClick={() => setFiltersOpen(true)}
+              >
+                <SlidersHorizontal size={19} aria-hidden="true" />
+                {activeFilterCount > 0 && (
+                  <span className="mobile-filter-count" aria-hidden="true">{activeFilterCount}</span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <p className="mobile-collection-summary">
+            {loading
+              ? 'Opening your plant journal…'
+              : rows.length === 0
+                ? 'No plants yet'
+                : `${visibleRows.length} of ${rows.length} ${rows.length === 1 ? 'plant' : 'plants'}${dueWaterCount > 0 ? ` · ${dueWaterCount} ${dueWaterCount === 1 ? 'needs' : 'need'} water` : ''}`}
+          </p>
+        </>
+      ) : (
+        <div className="collection-tools">
+          <div className="collection-filters">
+            <FilterTabs
+              value={filter}
+              onChange={(value) => {
+                setFilter(value)
+                setCareNotice('')
+              }}
+            />
+            <FilterSelect
+              label="Filter by location"
+              value={location}
+              options={locationOptions}
+              onChange={(value) => {
+                setLocation(value)
+                setCareNotice('')
+              }}
+            />
+            <FilterSelect
+              label="Filter by care"
+              value={care}
+              options={CARE_OPTIONS}
+              onChange={(value) => {
+                setCare(value)
+                setCareNotice('')
+              }}
+            />
+          </div>
+          <label className="search-box">
+            <Search size={16} />
+            <input
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value)
+                setCareNotice('')
+              }}
+              placeholder="Find a plant"
+              aria-label="Find a plant"
+            />
+          </label>
         </div>
-        <label className="search-box">
-          <Search size={16} />
-          <input
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value)
-              setCareNotice('')
-            }}
-            placeholder="Find a plant"
-            aria-label="Find a plant"
-          />
-        </label>
-      </div>
+      )}
 
       {error && <div className="error-banner" role="alert">{error}</div>}
 
-      {!loading && visibleRows.length > 0 && (
+      {!loading && visibleRows.length > 0 && !mobile && (
         <section className="bulk-care" aria-label="Water the visible plants">
           <p className="bulk-care-summary">
             <strong>{visibleRows.length}</strong> {visibleRows.length === 1 ? 'plant' : 'plants'} shown{' '}
@@ -195,7 +267,7 @@ export function CollectionSection({
         </section>
       )}
 
-      {careNotice && <p className="bulk-care-notice" role="status">{careNotice}</p>}
+      {!mobile && careNotice && <p className="bulk-care-notice" role="status">{careNotice}</p>}
 
       {loading ? (
         <div className="loading-state">Opening your plant journal...</div>
@@ -225,6 +297,85 @@ export function CollectionSection({
               onDelete={onDelete}
             />
           ))}
+        </div>
+      )}
+
+      {mobile && filtersOpen && (
+        <div
+          className="dialog-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setFiltersOpen(false)
+          }}
+        >
+          <section
+            className="plant-dialog mobile-filter-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-filter-title"
+            tabIndex={-1}
+          >
+            <div className="dialog-header">
+              <div>
+                <p className="eyebrow">COLLECTION</p>
+                <h2 id="mobile-filter-title">Filter plants</h2>
+              </div>
+              <button
+                type="button"
+                className="icon-button"
+                aria-label="Close dialog"
+                autoFocus
+                onClick={() => setFiltersOpen(false)}
+              >
+                <X size={19} />
+              </button>
+            </div>
+
+            <p className="dialog-intro">
+              Showing <strong>{visibleRows.length}</strong> of {rows.length} plants.
+            </p>
+
+            <div className="mobile-filter-fields">
+              <label className="mobile-filter-field">
+                <span>Location</span>
+                <FilterSelect
+                  label="Filter by location"
+                  value={location}
+                  options={locationOptions}
+                  onChange={(value) => {
+                    setLocation(value)
+                    setCareNotice('')
+                  }}
+                />
+              </label>
+              <label className="mobile-filter-field">
+                <span>Care</span>
+                <FilterSelect
+                  label="Filter by care"
+                  value={care}
+                  options={CARE_OPTIONS}
+                  onChange={(value) => {
+                    setCare(value)
+                    setCareNotice('')
+                  }}
+                />
+              </label>
+            </div>
+
+            <footer className="dialog-footer">
+              <div>
+                <button type="button" className="button button-outline" onClick={clearFilters}>
+                  Clear filters
+                </button>
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={() => setFiltersOpen(false)}
+                >
+                  Show {visibleRows.length} {visibleRows.length === 1 ? 'plant' : 'plants'}
+                </button>
+              </div>
+            </footer>
+          </section>
         </div>
       )}
     </section>
