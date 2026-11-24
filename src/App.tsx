@@ -5,6 +5,7 @@ import { CareSidebar } from './components/CareSidebar'
 import { CollectionSection } from './components/CollectionSection'
 import { ExportDialog } from './components/ExportDialog'
 import { ImportDialog } from './components/ImportDialog'
+import { MobileShell } from './components/MobileShell'
 import { NoteDialog } from './components/NoteDialog'
 import { OverviewStrip } from './components/OverviewStrip'
 import { PlantDialog } from './components/PlantDialog'
@@ -13,6 +14,7 @@ import { TopBar } from './components/TopBar'
 import { usePlantJournal } from './hooks/usePlantJournal'
 import { listBackupLocations } from './lib/backup'
 import { formatToday } from './lib/dates'
+import { isNativeMobilePlatform } from './lib/platform'
 
 function App() {
   const {
@@ -65,48 +67,8 @@ function App() {
     [locations, rows],
   )
 
-  return (
-    <div className="app-shell">
-      <TopBar onAddPlant={openNewPlant} onExport={openExport} onImport={openImport} />
-
-      <main id="top" className="dashboard">
-        <section className="welcome-row">
-          <div className="date-note"><Sun size={16} /><span>{formatToday()}</span></div>
-        </section>
-
-        <OverviewStrip
-          plantCount={rows.length}
-          dueCount={dueRows.length}
-          wateredCount={wateredCount}
-          nextFeedingLabel={nextFeedingLabel}
-        />
-
-        <div className="content-layout">
-          <CollectionSection
-            rows={rows}
-            loading={loading}
-            error={loadError || actionError}
-            onAdd={openNewPlant}
-            onEdit={openEditPlant}
-            onEditCare={openCareDetails}
-            onOpenNote={openNote}
-            onWater={waterPlant}
-            onWaterMany={waterPlants}
-            onFertilize={fertilizePlant}
-            onDelete={removePlant}
-          />
-          <CareSidebar
-            dueRows={dueRows}
-            dueFeedRows={dueFeedRows}
-            feedingTrackedCount={feedingTrackedCount}
-            onWater={waterPlant}
-            onFertilize={fertilizePlant}
-          />
-        </div>
-
-        <SiteFooter />
-      </main>
-
+  const dialogs = (
+    <>
       {formOpen && (
         <PlantDialog
           key={editingPlant?.id ?? 'new-plant'}
@@ -158,6 +120,77 @@ function App() {
           onImport={importJournal}
         />
       )}
+    </>
+  )
+
+  if (isNativeMobilePlatform()) {
+    return (
+      <MobileShell
+        rows={rows}
+        dueRows={dueRows}
+        dueFeedRows={dueFeedRows}
+        feedingTrackedCount={feedingTrackedCount}
+        loading={loading}
+        error={loadError || actionError}
+        onAddPlant={openNewPlant}
+        onEditPlant={openEditPlant}
+        onOpenCare={openCareDetails}
+        onOpenNote={openNote}
+        onWater={waterPlant}
+        onWaterMany={waterPlants}
+        onFertilize={fertilizePlant}
+        onDeletePlant={removePlant}
+        onImport={openImport}
+        onExport={openExport}
+      >
+        {dialogs}
+      </MobileShell>
+    )
+  }
+
+  return (
+    <div className="app-shell">
+      <TopBar onAddPlant={openNewPlant} onExport={openExport} onImport={openImport} />
+
+      <main id="top" className="dashboard">
+        <section className="welcome-row">
+          <div className="date-note"><Sun size={16} /><span>{formatToday()}</span></div>
+        </section>
+
+        <OverviewStrip
+          plantCount={rows.length}
+          dueCount={dueRows.length}
+          wateredCount={wateredCount}
+          nextFeedingLabel={nextFeedingLabel}
+        />
+
+        <div className="content-layout">
+          <CollectionSection
+            rows={rows}
+            loading={loading}
+            error={loadError || actionError}
+            onAdd={openNewPlant}
+            onEdit={openEditPlant}
+            onEditCare={openCareDetails}
+            onOpenNote={openNote}
+            onWater={waterPlant}
+            onWaterMany={waterPlants}
+            onFertilize={fertilizePlant}
+            onDelete={removePlant}
+          />
+          <CareSidebar
+            dueRows={dueRows}
+            dueFeedRows={dueFeedRows}
+            feedingTrackedCount={feedingTrackedCount}
+            onWater={waterPlant}
+            onFertilize={fertilizePlant}
+          />
+        </div>
+
+        <SiteFooter />
+      </main>
+
+      {dialogs}
     </div>
   )
 }
