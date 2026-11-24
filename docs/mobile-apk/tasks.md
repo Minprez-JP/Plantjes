@@ -20,7 +20,7 @@ Source of truth for live status: [project board #3](https://github.com/users/Min
 | [#43](https://github.com/Minprez-JP/Plantjes/issues/43) | Run security and no-egress regression gate on `main` | M4 | Mobile M4 | 2027-01-04 | 2027-01-10 | M | High | #34 | Backlog |
 | [#44](https://github.com/Minprez-JP/Plantjes/issues/44) | Publish release notes, install, support and rollback process | M4 | Mobile M4 | 2027-01-08 | 2027-01-13 | M | Medium | #42, #43 | Backlog |
 | [#45](https://github.com/Minprez-JP/Plantjes/issues/45) | Establish single-main platform drift and change-impact review | M4 | Mobile M4 | 2026-12-17 | 2027-01-13 | M | High | #31 | Backlog |
-| [#84](https://github.com/Minprez-JP/Plantjes/issues/84) | Add mobile-only navigation with collection, care and account screens | M2 | Mobile M2 | 2026-11-24 | — | M | Medium | #34 | In progress |
+| [#84](https://github.com/Minprez-JP/Plantjes/issues/84) | Add mobile-only navigation with collection, care and account screens | M2 | Mobile M2 | 2026-11-24 | — | M | Medium | #34 | In review (PR [#87](https://github.com/Minprez-JP/Plantjes/pull/87)) |
 
 ## Work breakdown by phase
 
