@@ -1,6 +1,6 @@
 # Plantjes mobile APK release
 
-Status: **M1 go — scaffold merged; v1.2.1 pre-release published** (last updated 2026-11-23)
+Status: **M1 go — scaffold merged; v1.2.1 pre-release published; mobile-only UX in progress (#84)** (last updated 2026-11-24)
 
 This is the canonical entry point for the local-run Android APK work. The shared React/Vite application lives on the protected `main` branch. The Capacitor `android/` scaffold is merged on `main` through #81/#34. Mobile work is done on short-lived topic branches and merged into `main`.
 
