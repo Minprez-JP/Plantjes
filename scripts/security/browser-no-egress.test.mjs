@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { setTimeout as sleep } from 'node:timers/promises'
@@ -20,6 +20,7 @@ const tinyPng = Buffer.from(
 
 let tempRoot
 let outputDir
+let downloadDir
 let backupPath
 let photoPath
 let previewServer
@@ -285,6 +286,15 @@ async function stopBrowser() {
   await sleep(200)
 }
 
+async function waitForDownload() {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const file = readdirSync(downloadDir).find((name) => name.endsWith('.plantjes'))
+    if (file) return file
+    await sleep(100)
+  }
+  throw new Error(`No .plantjes download was written to ${downloadDir}`)
+}
+
 if (skipBrowserEgress) {
   describe.skip('browser no-egress regression', () => {
     it('runs when SKIP_BROWSER_EGRESS is not set and Chrome is available', () => {})
@@ -293,6 +303,8 @@ if (skipBrowserEgress) {
 beforeAll(async () => {
   tempRoot = mkdtempSync(join(tmpdir(), 'plantjes-browser-egress-'))
   outputDir = join(tempRoot, 'dist')
+  downloadDir = join(tempRoot, 'downloads')
+  mkdirSync(downloadDir, { recursive: true })
   backupPath = join(tempRoot, 'browser.plantjes')
   photoPath = join(tempRoot, 'plant.png')
 
@@ -356,6 +368,12 @@ beforeAll(async () => {
 
   const { port, wsPath } = await waitForDebugger(profileDir)
   client = await connectToPage(port)
+  // Keep the export check real, but send the downloaded backup into the test's
+  // temp directory so it is removed with tempRoot in afterAll.
+  await client.send('Page.setDownloadBehavior', {
+    behavior: 'allow',
+    downloadPath: downloadDir,
+  })
   await client.send('Page.enable')
   await client.send('Network.enable')
   await client.send('Runtime.enable')
@@ -421,7 +439,8 @@ describe('browser no-egress regression', () => {
     await clickButton('Export')
     await waitForExpression(`!!document.querySelector('[role="dialog"]')`)
     await submitDialog('Export')
-    await sleep(700)
+    const download = await waitForDownload()
+    expect(download).toMatch(/plantjes-backup-.*\.plantjes$/)
     assertNoEgress(mark, 'backup export')
 
     expect(requests.length).toBeGreaterThan(0)
