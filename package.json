@@ -19,8 +19,9 @@
     "verify:ci-gates": "node scripts/security/verify-ci-gates.mjs",
     "verify:audit": "node scripts/security/verify-audit-policy.mjs",
     "verify:no-egress": "node scripts/security/verify-no-egress.mjs",
+    "verify:mobile-shell": "node scripts/verify-mobile-shell.mjs",
     "secret:scan": "node scripts/secret-scan.mjs",
-    "security:check": "npm audit --audit-level=high --omit=dev && npm run security:reports && npm test && npm run build && npm run verify:no-egress"
+    "security:check": "npm audit --audit-level=high --omit=dev && npm run security:reports && npm test && npm run build && npm run verify:mobile-shell && npm run verify:no-egress"
   },
   "dependencies": {
     "@capacitor/core": "8.6.2",

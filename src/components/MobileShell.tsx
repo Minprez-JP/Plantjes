@@ -1,16 +1,14 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import {
   Check,
   Download,
   Droplets,
   LayoutGrid,
   Leaf,
-  Menu,
   PlantPot,
   Plus,
   Upload,
   UserRound,
-  X,
 } from 'lucide-react'
 import type { Plant } from '../db'
 import type { PlantRow } from '../types'
@@ -19,32 +17,34 @@ import { CollectionSection } from './CollectionSection'
 const MOBILE_SCREENS = ['collection', 'water', 'feed', 'account'] as const
 export type MobileScreen = (typeof MOBILE_SCREENS)[number]
 
+const SCREEN_TITLES: Record<MobileScreen, string> = {
+  collection: 'Collection',
+  water: 'Water',
+  feed: 'Feed',
+  account: 'Account',
+}
+
 interface MobileHashState {
   screen: MobileScreen
-  menuOpen: boolean
 }
 
 /**
  * Hash navigation is used deliberately: unlike pushState alone, a hash change
- * is a real WebView history entry, so the Android back button emits
- * `hashchange`/`popstate` instead of exiting the app.
+ * is a real WebView history entry, so browser and Android back gestures can
+ * restore the previous screen instead of leaving the app.
  */
 function readMobileHash(hash: string): MobileHashState | null {
   const raw = hash.replace(/^#\/?/, '')
   if (!raw) return null
 
-  const [screen, mode] = raw.split('/')
+  const [screen] = raw.split('/')
   if (!(MOBILE_SCREENS as readonly string[]).includes(screen)) return null
 
-  return { screen: screen as MobileScreen, menuOpen: mode === 'menu' }
+  return { screen: screen as MobileScreen }
 }
 
-function mobileHash(screen: MobileScreen, menuOpen: boolean) {
-  return `#/${screen}${menuOpen ? '/menu' : ''}`
-}
-
-function writeMobileHash(screen: MobileScreen, menuOpen: boolean, mode: 'push' | 'replace') {
-  const next = mobileHash(screen, menuOpen)
+function writeMobileHash(screen: MobileScreen, mode: 'push' | 'replace') {
+  const next = `#/${screen}`
   if (window.location.hash === next) return
 
   if (mode === 'push') window.location.hash = next
@@ -91,47 +91,20 @@ export function MobileShell({
   children,
 }: MobileShellProps) {
   const [screen, setScreen] = useState<MobileScreen>('collection')
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuButtonRef = useRef<HTMLButtonElement>(null)
-  const navRef = useRef<HTMLElement>(null)
 
-  const openMenu = useCallback(() => {
-    setMenuOpen(true)
-    writeMobileHash(screen, true, 'push')
-  }, [screen])
-
-  const closeMenu = useCallback(() => {
-    if (readMobileHash(window.location.hash)?.menuOpen) {
-      window.history.back()
-    } else {
-      writeMobileHash(screen, false, 'replace')
-    }
-    setMenuOpen(false)
-    menuButtonRef.current?.focus()
-  }, [screen])
-
-  const selectScreen = useCallback((next: MobileScreen) => {
-    const wasMenuOpen = readMobileHash(window.location.hash)?.menuOpen ?? false
-    writeMobileHash(next, false, wasMenuOpen ? 'replace' : 'push')
+  const selectScreen = useCallback((next: MobileScreen, mode: 'push' | 'replace' = 'push') => {
+    writeMobileHash(next, mode)
     setScreen(next)
-    setMenuOpen(false)
-    menuButtonRef.current?.focus()
   }, [])
 
   useEffect(() => {
     const restored = readMobileHash(window.location.hash)
-    if (restored) {
-      setScreen(restored.screen)
-      setMenuOpen(restored.menuOpen)
-    } else {
-      writeMobileHash('collection', false, 'replace')
-    }
+    if (restored) setScreen(restored.screen)
+    else writeMobileHash('collection', 'replace')
 
     const syncFromHash = () => {
       const next = readMobileHash(window.location.hash)
-      if (!next) return
-      setScreen(next.screen)
-      setMenuOpen(next.menuOpen)
+      if (next) setScreen(next.screen)
     }
 
     window.addEventListener('hashchange', syncFromHash)
@@ -141,18 +114,6 @@ export function MobileShell({
       window.removeEventListener('popstate', syncFromHash)
     }
   }, [])
-
-  useEffect(() => {
-    if (!menuOpen) return
-    navRef.current?.querySelector<HTMLButtonElement>('button')?.focus()
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeMenu()
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [menuOpen, closeMenu])
 
   // MainActivity forwards the Android hardware back button to this event so
   // the shell can close the topmost UI instead of quitting the app.
@@ -167,21 +128,15 @@ export function MobileShell({
         return
       }
 
-      if (menuOpen) {
-        event.preventDefault()
-        closeMenu()
-        return
-      }
-
       if (screen !== 'collection') {
         event.preventDefault()
-        selectScreen('collection')
+        selectScreen('collection', 'replace')
       }
     }
 
     window.addEventListener('plantjes:back', handleNativeBack)
     return () => window.removeEventListener('plantjes:back', handleNativeBack)
-  }, [closeMenu, menuOpen, screen, selectScreen])
+  }, [screen, selectScreen])
 
   const navItems = [
     { id: 'collection', label: 'Collection', icon: LayoutGrid, count: rows.length },
@@ -192,127 +147,95 @@ export function MobileShell({
 
   return (
     <div className="mobile-shell">
-      <header className="mobile-topbar">
-        <button
-          ref={menuButtonRef}
-          type="button"
-          className="mobile-topbar-button"
-          aria-label="Open navigation"
-          aria-expanded={menuOpen}
-          aria-controls="mobile-navigation"
-          onClick={menuOpen ? closeMenu : openMenu}
-        >
-          {menuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+      <div className="mobile-content-column">
+        <header className="mobile-appbar">
+          <span className="mobile-appbar-mark" aria-hidden="true"><PlantPot size={21} /></span>
+          <span className="mobile-appbar-copy">
+            <span className="mobile-appbar-brand">Plantjes.</span>
+            <span className="mobile-appbar-title">{SCREEN_TITLES[screen]}</span>
+          </span>
+          <span className="mobile-appbar-spacer" aria-hidden="true" />
+        </header>
 
-        <span className="mobile-brand">
-          <span className="mobile-brand-mark"><PlantPot size={18} strokeWidth={2} /></span>
-          Plantjes<span className="mobile-brand-period">.</span>
-        </span>
+        {error && screen !== 'collection' && (
+          <div className="mobile-error-banner" role="alert">{error}</div>
+        )}
 
-        <button
-          type="button"
-          className="mobile-add-button"
-          aria-label="Add plant"
-          onClick={onAddPlant}
-        >
-          <Plus size={17} /> <span>Add</span>
-        </button>
-      </header>
+        <main className="mobile-main" key={screen} aria-label={SCREEN_TITLES[screen]}>
+          {screen === 'collection' && (
+            <CollectionSection
+              rows={rows}
+              loading={loading}
+              error={error}
+              onAdd={onAddPlant}
+              onEdit={onEditPlant}
+              onEditCare={onOpenCare}
+              onOpenNote={onOpenNote}
+              onWater={onWater}
+              onWaterMany={onWaterMany}
+              onFertilize={onFertilize}
+              onDelete={onDeletePlant}
+            />
+          )}
 
-      {menuOpen && (
-        <>
-          <div className="mobile-nav-scrim" aria-hidden="true" onClick={closeMenu} />
-          <nav
-            ref={navRef}
-            id="mobile-navigation"
-            className="mobile-nav-drawer"
-            aria-label="Main navigation"
-          >
-            <div className="mobile-nav-header">
-              <div>
-                <p className="eyebrow">PLANTJES</p>
-                <h2>Navigate</h2>
-              </div>
+          {screen === 'water' && (
+            <MobileCareScreen
+              variant="water"
+              rows={dueRows}
+              loading={loading}
+              onAction={onWater}
+            />
+          )}
+
+          {screen === 'feed' && (
+            <MobileCareScreen
+              variant="feed"
+              rows={dueFeedRows}
+              loading={loading}
+              feedingTrackedCount={feedingTrackedCount}
+              onAction={onFertilize}
+            />
+          )}
+
+          {screen === 'account' && (
+            <MobileAccountScreen
+              plantCount={rows.length}
+              onImport={onImport}
+              onExport={onExport}
+            />
+          )}
+        </main>
+
+        {screen === 'collection' && (
+          <button type="button" className="mobile-fab" onClick={onAddPlant}>
+            <Plus size={22} aria-hidden="true" />
+            <span>Add plant</span>
+          </button>
+        )}
+      </div>
+
+      <nav className="mobile-navigation" aria-label="Main navigation">
+        <ul className="mobile-nav-list">
+          {navItems.map(({ id, label, icon: Icon, count }) => (
+            <li key={id}>
               <button
                 type="button"
-                className="mobile-nav-close"
-                aria-label="Close navigation"
-                onClick={closeMenu}
+                className={screen === id ? 'mobile-nav-item is-active' : 'mobile-nav-item'}
+                aria-current={screen === id ? 'page' : undefined}
+                onClick={() => selectScreen(id)}
               >
-                <X size={18} />
+                <span className="mobile-nav-icon">
+                  <Icon size={21} aria-hidden="true" />
+                  {count !== undefined && count > 0 && (
+                    <span className="mobile-nav-badge" aria-hidden="true">{count}</span>
+                  )}
+                </span>
+                <span className="mobile-nav-label">{label}</span>
               </button>
-            </div>
-
-            <div className="mobile-nav-list">
-              {navItems.map(({ id, label, icon: Icon, count }) => (
-                <button
-                  key={id}
-                  type="button"
-                  className={screen === id ? 'mobile-nav-item is-active' : 'mobile-nav-item'}
-                  aria-current={screen === id ? 'page' : undefined}
-                  onClick={() => selectScreen(id)}
-                >
-                  <Icon size={18} aria-hidden />
-                  <span>{label}</span>
-                  {count !== undefined && <span className="mobile-nav-count">{count}</span>}
-                </button>
-              ))}
-            </div>
-
-            <p className="mobile-nav-footnote">No online account. Everything stays on this device.</p>
-          </nav>
-        </>
-      )}
-
-      {error && screen !== 'collection' && (
-        <div className="mobile-error-banner" role="alert">{error}</div>
-      )}
-
-      <main className="mobile-main">
-        {screen === 'collection' && (
-          <CollectionSection
-            rows={rows}
-            loading={loading}
-            error={error}
-            onAdd={onAddPlant}
-            onEdit={onEditPlant}
-            onEditCare={onOpenCare}
-            onOpenNote={onOpenNote}
-            onWater={onWater}
-            onWaterMany={onWaterMany}
-            onFertilize={onFertilize}
-            onDelete={onDeletePlant}
-          />
-        )}
-
-        {screen === 'water' && (
-          <MobileCareScreen
-            variant="water"
-            rows={dueRows}
-            loading={loading}
-            onAction={onWater}
-          />
-        )}
-
-        {screen === 'feed' && (
-          <MobileCareScreen
-            variant="feed"
-            rows={dueFeedRows}
-            loading={loading}
-            feedingTrackedCount={feedingTrackedCount}
-            onAction={onFertilize}
-          />
-        )}
-
-        {screen === 'account' && (
-          <MobileAccountScreen
-            plantCount={rows.length}
-            onImport={onImport}
-            onExport={onExport}
-          />
-        )}
-      </main>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {children}
     </div>
@@ -336,7 +259,6 @@ function MobileCareScreen({
 }: MobileCareScreenProps) {
   const isWater = variant === 'water'
   const Icon = isWater ? Droplets : Leaf
-  const heading = isWater ? 'Water list' : 'Feed list'
   const overdueText = isWater
     ? 'Plants whose watering day has arrived.'
     : 'Plants whose feeding day has arrived.'
@@ -344,8 +266,13 @@ function MobileCareScreen({
   return (
     <section className="mobile-care-screen">
       <header className="mobile-screen-heading">
-        <p className="eyebrow">{isWater ? 'TODAY’S CARE' : 'FEEDING SCHEDULE'}</p>
-        <h1>{heading} <span>{rows.length.toString().padStart(2, '0')}</span></h1>
+        <div className="mobile-care-hero">
+          <span className={isWater ? 'mobile-care-hero-icon water-icon' : 'mobile-care-hero-icon feed-icon'}>
+            <Icon size={26} aria-hidden="true" />
+          </span>
+          <span className="mobile-care-hero-count">{rows.length.toString().padStart(2, '0')}</span>
+        </div>
+        <h1>{isWater ? 'Water list' : 'Feed list'}</h1>
         <p>{overdueText}</p>
       </header>
 
@@ -353,7 +280,7 @@ function MobileCareScreen({
         <div className="mobile-loading">Opening your plant journal...</div>
       ) : rows.length === 0 ? (
         <div className="mobile-empty">
-          <Icon size={28} aria-hidden />
+          <Icon size={30} aria-hidden="true" />
           <h2>{isWater ? 'All caught up' : feedingTrackedCount > 0 ? 'All fed' : 'No feeding schedule yet'}</h2>
           <p>
             {isWater
@@ -367,17 +294,14 @@ function MobileCareScreen({
         <ul className="mobile-care-list">
           {rows.map(({ plant }) => (
             <li key={plant.id} className="mobile-care-row">
-              <span className={isWater ? 'mobile-care-icon water-icon' : 'mobile-care-icon feed-icon'}>
-                <Icon size={17} aria-hidden />
-              </span>
               <span className="mobile-care-copy">
                 <strong>{plant.name}</strong>
                 <small>{plant.location || plant.environment}</small>
-                <small className="mobile-care-detail">
-                  {isWater
-                    ? `Every ${plant.waterEveryDays} days`
-                    : `Every ${plant.fertilizeEveryDays} days`}
-                </small>
+              </span>
+              <span className="mobile-care-detail">
+                {isWater
+                  ? `Every ${plant.waterEveryDays} days`
+                  : `Every ${plant.fertilizeEveryDays} days`}
               </span>
               <button
                 type="button"
@@ -385,7 +309,7 @@ function MobileCareScreen({
                 aria-label={isWater ? `Mark ${plant.name} as watered` : `Mark ${plant.name} as fed`}
                 onClick={() => onAction(plant)}
               >
-                <Check size={16} aria-hidden />
+                <Check size={17} aria-hidden="true" />
                 <span>{isWater ? 'Watered' : 'Fed'}</span>
               </button>
             </li>
@@ -406,13 +330,13 @@ function MobileAccountScreen({ plantCount, onImport, onExport }: MobileAccountSc
   return (
     <section className="mobile-account-screen">
       <header className="mobile-screen-heading">
-        <p className="eyebrow">ACCOUNT</p>
-        <h1>Local journal</h1>
+        <p className="mobile-eyebrow">LOCAL JOURNAL</p>
+        <h1>Your data stays here</h1>
         <p>Plantjes for Android does not use an online account.</p>
       </header>
 
       <div className="mobile-account-card">
-        <span className="mobile-account-icon"><UserRound size={22} aria-hidden /></span>
+        <span className="mobile-account-icon"><UserRound size={24} aria-hidden="true" /></span>
         <h2>Plant database</h2>
         <p>
           Your {plantCount} {plantCount === 1 ? 'plant is' : 'plants are'} saved on this device.
@@ -420,11 +344,11 @@ function MobileAccountScreen({ plantCount, onImport, onExport }: MobileAccountSc
           Importing replaces the current collection.
         </p>
         <div className="mobile-account-actions">
-          <button type="button" className="button button-outline" onClick={onImport}>
-            <Upload size={16} /> Import backup
+          <button type="button" className="mobile-account-action" onClick={onImport}>
+            <Upload size={18} aria-hidden="true" /> Import backup
           </button>
-          <button type="button" className="button button-primary" onClick={onExport}>
-            <Download size={16} /> Export backup
+          <button type="button" className="mobile-account-action is-primary" onClick={onExport}>
+            <Download size={18} aria-hidden="true" /> Export backup
           </button>
         </div>
       </div>

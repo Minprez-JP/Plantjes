@@ -118,20 +118,19 @@ describe('App platform shell', () => {
   it('keeps the existing desktop layout on the web platform', () => {
     render(<App />)
 
-    expect(screen.queryByRole('button', { name: /open navigation/i })).toBeNull()
+    expect(screen.queryByRole('navigation', { name: /main navigation/i })).toBeNull()
     expect(screen.getByText('THE COLLECTION')).toBeTruthy()
     expect(screen.getByText('Watering list')).toBeTruthy()
     expect(screen.getByText('Saved on this device')).toBeTruthy()
   })
 
-  it('opens the mobile menu and shows only the water-due plants', () => {
+  it('shows the native navigation and only water-due plants on the water screen', () => {
     vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
     render(<App />)
 
     expect(screen.queryByText('Watering list')).toBeNull()
     expect(screen.getByText('THE COLLECTION')).toBeTruthy()
 
-    fireEvent.click(screen.getByRole('button', { name: /open navigation/i }))
     const nav = screen.getByRole('navigation', { name: /main navigation/i })
     fireEvent.click(within(nav).getByRole('button', { name: /water/i }))
 
@@ -144,7 +143,6 @@ describe('App platform shell', () => {
     vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: /open navigation/i }))
     const nav = screen.getByRole('navigation', { name: /main navigation/i })
     fireEvent.click(within(nav).getByRole('button', { name: /feed/i }))
 
@@ -163,11 +161,10 @@ describe('App platform shell', () => {
     expect(screen.queryByText('Monstera')).toBeNull()
   })
 
-  it('exposes import and export on the account placeholder', () => {
+  it('exposes import and export on the account screen', () => {
     vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: /open navigation/i }))
     const nav = screen.getByRole('navigation', { name: /main navigation/i })
     fireEvent.click(within(nav).getByRole('button', { name: /account/i }))
 
@@ -179,37 +176,19 @@ describe('App platform shell', () => {
     expect(journal.openExport).toHaveBeenCalledTimes(1)
   })
 
-  it('closes the menu when Android back navigation restores the previous hash', () => {
+  it('restores the selected screen from the hash', () => {
     vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
+    window.location.hash = '#/feed'
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: /open navigation/i }))
-    expect(screen.getByRole('navigation', { name: /main navigation/i })).toBeTruthy()
-    expect(window.location.hash).toBe('#/collection/menu')
-
-    window.location.hash = '#/collection'
-    fireEvent(window, new Event('hashchange'))
-
-    expect(screen.queryByRole('navigation', { name: /main navigation/i })).toBeNull()
-  })
-
-  it('consumes the Android back event to close the mobile menu', () => {
-    vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
-    render(<App />)
-
-    fireEvent.click(screen.getByRole('button', { name: /open navigation/i }))
-    const backEvent = new CustomEvent('plantjes:back', { cancelable: true })
-    fireEvent(window, backEvent)
-
-    expect(backEvent.defaultPrevented).toBe(true)
-    expect(screen.queryByRole('navigation', { name: /main navigation/i })).toBeNull()
+    expect(screen.getByRole('heading', { name: /feed list/i })).toBeTruthy()
+    expect(screen.queryByText('THE COLLECTION')).toBeNull()
   })
 
   it('consumes the Android back event to return from a care screen', () => {
     vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: /open navigation/i }))
     const nav = screen.getByRole('navigation', { name: /main navigation/i })
     fireEvent.click(within(nav).getByRole('button', { name: /water/i }))
     expect(screen.getByRole('heading', { name: /water list/i })).toBeTruthy()
@@ -218,8 +197,19 @@ describe('App platform shell', () => {
     fireEvent(window, backEvent)
 
     expect(backEvent.defaultPrevented).toBe(true)
+    expect(window.location.hash).toBe('#/collection')
     expect(screen.getByText('THE COLLECTION')).toBeTruthy()
     expect(screen.queryByRole('heading', { name: /water list/i })).toBeNull()
+  })
+
+  it('leaves the Android back event unhandled on the root screen', () => {
+    vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
+    render(<App />)
+
+    const backEvent = new CustomEvent('plantjes:back', { cancelable: true })
+    fireEvent(window, backEvent)
+
+    expect(backEvent.defaultPrevented).toBe(false)
   })
 
   it('consumes the Android back event to close an open dialog', () => {
@@ -233,5 +223,19 @@ describe('App platform shell', () => {
 
     expect(backEvent.defaultPrevented).toBe(true)
     expect(journal.closeImport).toHaveBeenCalledTimes(1)
+  })
+
+  it('closes a dialog before leaving a care screen on Android back', () => {
+    journal.importOpen = true
+    vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
+    window.location.hash = '#/water'
+    render(<App />)
+
+    const backEvent = new CustomEvent('plantjes:back', { cancelable: true })
+    fireEvent(window, backEvent)
+
+    expect(journal.closeImport).toHaveBeenCalledTimes(1)
+    expect(window.location.hash).toBe('#/water')
+    expect(screen.getByRole('heading', { name: /water list/i })).toBeTruthy()
   })
 })
