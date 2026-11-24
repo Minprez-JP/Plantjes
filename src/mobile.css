@@ -41,12 +41,12 @@
   flex-direction: column;
 }
 
-/* Small top app bar: the status-bar area is part of the bar itself so the
-   content below it is never trapped under system icons or a cutout. */
+/* Single-line top app bar: the status-bar area is part of the bar itself so
+   content is never trapped under system icons or a cutout. */
 .mobile-appbar {
   z-index: 3;
   flex: 0 0 auto;
-  min-height: 64px;
+  min-height: 56px;
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -58,38 +58,26 @@
 }
 
 .mobile-appbar-mark {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
   color: var(--green);
   background: var(--green-soft);
   border: 1px solid var(--green-soft);
-  border-radius: 14px;
-}
-
-.mobile-appbar-copy {
-  min-width: 0;
-  display: grid;
-  gap: 1px;
-}
-
-.mobile-appbar-brand {
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-caps);
-  line-height: 1;
-  text-transform: uppercase;
+  border-radius: 12px;
 }
 
 .mobile-appbar-title {
+  min-width: 0;
+  overflow: hidden;
   color: var(--ink);
-  font-family: var(--font-display);
-  font-size: var(--text-3xl);
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mobile-appbar-spacer {
@@ -234,46 +222,45 @@
   line-height: 1;
 }
 
-/* Collection: native-sized search, chips and card affordances. */
+/* Collection: a compact, search-first toolbar keeps the plant list on screen.
+   Secondary filters live in a bottom sheet; bulk watering belongs to Water. */
 .mobile-main .plant-section {
   padding-top: 0;
 }
 
-.mobile-main .section-heading {
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.mobile-main .section-heading .eyebrow {
-  margin-bottom: 2px;
-  color: var(--green);
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-caps);
-}
-
-.mobile-main .section-heading h2 {
-  font-size: var(--text-5xl);
-}
-
-.mobile-main .desktop-add {
-  display: none;
-}
-
-.mobile-main .collection-tools {
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--space-3);
-  padding: var(--space-3) 0 var(--space-4);
-}
-
-.mobile-main .collection-filters {
-  flex-direction: column;
-  align-items: stretch;
+.mobile-main .mobile-collection-tools {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: grid;
   gap: 10px;
+  padding: 8px 0 10px;
+  background: var(--canvas);
+}
+
+.mobile-main .search-box {
+  width: 100%;
+  height: 52px;
+  min-height: 52px;
+  gap: 10px;
+  padding: 0 var(--space-4);
+  border-radius: 14px;
+}
+
+.mobile-main .search-box input {
+  font-size: 16px;
+}
+
+.mobile-main .mobile-filter-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .mobile-main .filter-tabs {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   overflow-x: auto;
   border-radius: var(--radius-round);
@@ -292,53 +279,54 @@
   font-size: var(--text-md);
 }
 
-.mobile-main .filter-select {
-  width: 100%;
-}
-
-.mobile-main .filter-select select {
-  width: 100%;
-  max-width: none;
-  min-height: 48px;
-  border-radius: 12px;
-  font-size: var(--text-lg);
-}
-
-.mobile-main .search-box {
-  width: 100%;
-  height: 52px;
-  min-height: 52px;
-  gap: 10px;
-  padding: 0 var(--space-4);
+.mobile-main .mobile-filter-button {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: grid;
+  place-items: center;
+  color: var(--green-dark);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   border-radius: 14px;
 }
 
-.mobile-main .search-box input {
-  font-size: 16px;
+.mobile-main .mobile-filter-button.is-active {
+  color: var(--on-accent);
+  background: var(--green);
+  border-color: var(--green-dark);
 }
 
-.mobile-main .bulk-care {
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-  padding: var(--space-4);
-  border-radius: 16px;
-}
-
-.mobile-main .bulk-care-actions {
+.mobile-filter-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
   display: grid;
-  grid-template-columns: 1fr;
+  place-items: center;
+  padding: 0 4px;
+  color: var(--on-accent);
+  background: var(--coral);
+  border: 2px solid var(--canvas);
+  border-radius: var(--radius-round);
+  font-size: 9px;
+  font-weight: var(--weight-bold);
+  line-height: 1;
 }
 
-.mobile-main .bulk-care-actions .button,
+.mobile-main .mobile-collection-summary {
+  margin: 0 2px 12px;
+  color: var(--text-muted);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+}
+
 .mobile-main .text-button {
   min-height: 48px;
-  border-radius: 12px;
-}
-
-.mobile-main .text-button {
   padding: 0 var(--space-4);
+  border-radius: 12px;
   text-decoration: none;
   background: var(--green-tint);
 }
@@ -678,6 +666,51 @@
   border-radius: 14px;
 }
 
+/* Secondary collection filters become a compact bottom sheet rather than a
+   second row of controls on the home screen. */
+.mobile-shell .mobile-filter-sheet {
+  max-height: min(74dvh, 620px);
+}
+
+.mobile-shell .mobile-filter-sheet .dialog-header h2 {
+  font-size: var(--text-3xl);
+}
+
+.mobile-shell .mobile-filter-fields {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4) 0 var(--space-6);
+}
+
+.mobile-shell .mobile-filter-field {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.mobile-shell .mobile-filter-field > span {
+  color: var(--text-muted);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.mobile-shell .mobile-filter-field .filter-select {
+  width: 100%;
+}
+
+.mobile-shell .mobile-filter-field .filter-select select {
+  width: 100%;
+  max-width: none;
+  min-height: 50px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+.mobile-shell .mobile-filter-sheet .dialog-footer > div {
+  display: flex;
+  gap: var(--space-2);
+}
+
 .mobile-shell .form-tabs {
   position: sticky;
   top: 76px;
@@ -787,7 +820,7 @@
   }
 
   .mobile-appbar {
-    padding-left: calc(24px + var(--mobile-safe-right));
+    padding-left: calc(24px + var(--mobile-safe-left));
     padding-right: calc(24px + var(--mobile-safe-right));
   }
 

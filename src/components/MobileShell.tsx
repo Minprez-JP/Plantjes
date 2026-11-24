@@ -150,10 +150,7 @@ export function MobileShell({
       <div className="mobile-content-column">
         <header className="mobile-appbar">
           <span className="mobile-appbar-mark" aria-hidden="true"><PlantPot size={21} /></span>
-          <span className="mobile-appbar-copy">
-            <span className="mobile-appbar-brand">Plantjes.</span>
-            <span className="mobile-appbar-title">{SCREEN_TITLES[screen]}</span>
-          </span>
+          <span className="mobile-appbar-title">{SCREEN_TITLES[screen]}</span>
           <span className="mobile-appbar-spacer" aria-hidden="true" />
         </header>
 
@@ -175,6 +172,7 @@ export function MobileShell({
               onWaterMany={onWaterMany}
               onFertilize={onFertilize}
               onDelete={onDeletePlant}
+              mobile
             />
           )}
 
