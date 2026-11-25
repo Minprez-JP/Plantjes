@@ -22,8 +22,8 @@ npm run security:check
 `npm run security:check` runs:
 
 1. `npm audit --audit-level=high --omit=dev` — blocking runtime dependency gate.
-2. `npm run security:reports` — runs `verify:install` (`npm ci` lockfile/hash
-   baseline check) and `verify:ci-gates` (action pins, permissions and committed
+2. `npm run security:reports` — runs `verify:install` (lockfile integrity after
+   `npm ci`) and `verify:ci-gates` (action pins, permissions and committed
    ruleset), then pinned lint rules, CycloneDX SBOMs, licence policy and audit
    policy.
 3. `npm test` — unit, component, seeded fuzz/property, upload validation, production-build CSP/asset-integrity, ZAP report-gate, CI gate verification, and security regression tests, including the lint fixtures. The browser no-egress suite is skipped here with `SKIP_BROWSER_EGRESS=1` and runs in a dedicated CI job.
@@ -80,7 +80,7 @@ npm run secret:scan
 | --- | --- | --- |
 | Runtime dependency audit | `ci.yml`: `npm audit --audit-level=high --omit=dev` | Yes |
 | Dev dependency advisories | `ci.yml`: `npm audit --audit-level=high \|\| true`; `security-policies/audit.json` requires a reviewed acceptance for any reported advisory | Yes after policy review |
-| Reproducible install | `git diff --exit-code -- package-lock.json` + `npm run verify:install` against `security-baselines/install.json` | Yes |
+| Install integrity | `git diff --exit-code -- package-lock.json` + `npm run verify:install` (installed tree matches the committed lockfile) | Yes |
 | SBOM and licences | `npm run security:reports`: pinned `@cyclonedx/cyclonedx-npm@7.0.1`, four commit-named SBOMs, licence policy and generated notices | Yes |
 | No-egress evidence | `npm run verify:no-egress` checks production dependency names and built asset references | Yes |
 | Tests and build | `npm test`, `npm run build` | Yes |
@@ -182,12 +182,15 @@ with owner, reason, expiry and linked issue is present. `THIRD_PARTY_NOTICES.gen
 includes the full MIT+Beer `LICENSE` text and the dependency table; the checked-in
 `THIRD_PARTY_NOTICES.md` remains the source for fonts and photography.
 
-`security-baselines/install.json` records the SHA-256 of `package-lock.json` and
-the sorted package list. CI checks `git diff --exit-code -- package-lock.json`,
-confirms `node_modules/.package-lock.json` was produced by `npm ci`, and records
-the Node/npm versions without comparing them to the content hashes. Node 22/26
-equivalence must be re-run for mobile issue #48; any baseline update requires a
-reviewed PR. `security-policies/audit.json` records accepted advisories; any new
+`package-lock.json` is the single source of truth for the dependency tree. Each
+entry carries an `integrity` hash, and `npm ci` verifies those hashes on every
+install, so CI installs exactly the lockfile from the PR. CI additionally checks
+`git diff --exit-code -- package-lock.json` and confirms
+`node_modules/.package-lock.json` was produced by that install; the Node/npm
+versions are recorded as evidence. Node 22/26 equivalence must be re-run for
+mobile issue #48. There is no separate lockfile hash baseline: dependency changes
+are reviewed in the PR diff and enforced by the frozen install, audit, tests and
+build. `security-policies/audit.json` records accepted advisories; any new
 Medium/Low advisory needs an unexpired linked acceptance, and High/Critical
 findings always fail.
 
@@ -259,7 +262,7 @@ and M2 gates whenever sanitisation or photo-input code changes.
 | --- | --- | --- |
 | FR-01 SAST | [#13](https://github.com/Minprez-JP/Plantjes/issues/13), [#24](https://github.com/Minprez-JP/Plantjes/issues/24) | Committed `codeql.yml` (pinned SHAs) + alert triage |
 | FR-02 Security lint rules | [#14](https://github.com/Minprez-JP/Plantjes/issues/14) | Pinned flat config + fixtures + JSON/SARIF evidence |
-| FR-03 SCA/SBOM/licences | [#15](https://github.com/Minprez-JP/Plantjes/issues/15) | Blocking audit + install baseline, pinned CycloneDX SBOMs, licence policy, generated notices |
+| FR-03 SCA/SBOM/licences | [#15](https://github.com/Minprez-JP/Plantjes/issues/15) | Blocking audit + lockfile integrity, pinned CycloneDX SBOMs, licence policy, generated notices |
 | FR-04 Secret scanning | [#16](https://github.com/Minprez-JP/Plantjes/issues/16) | GitHub secret scanning + push protection; CI gitleaks pinned action and Docker-reproducible local scan |
 | FR-05 CSP/asset integrity | [#17](https://github.com/Minprez-JP/Plantjes/issues/17) | `scripts/security/production-build.test.mjs` builds a fresh output directory and asserts exact CSP, no sourcemaps, no inline scripts, same-origin resolvable assets, and no CDN/telemetry references |
 | FR-06 Fuzz/import tests | [#18](https://github.com/Minprez-JP/Plantjes/issues/18) | Seeded generators in `src/lib/__tests__/{backup.fuzz,plantForm.fuzz,hostileInput.render}.test.*` cover malformed/oversized `.plantjes` payloads, field limits, numeric ranges, allowlists, and inert rendering of script-like text |
