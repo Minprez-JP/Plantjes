@@ -21,6 +21,7 @@ Source of truth for live status: [project board #3](https://github.com/users/Min
 | [#44](https://github.com/Minprez-JP/Plantjes/issues/44) | Publish release notes, install, support and rollback process | M4 | Mobile M4 | 2027-01-08 | 2027-01-13 | M | Medium | #42, #43 | Backlog |
 | [#45](https://github.com/Minprez-JP/Plantjes/issues/45) | Establish single-main platform drift and change-impact review | M4 | Mobile M4 | 2026-12-17 | 2027-01-13 | M | High | #31 | Backlog |
 | [#84](https://github.com/Minprez-JP/Plantjes/issues/84) | Add mobile-only navigation with collection, care and account screens | M2 | Mobile M2 | 2026-11-24 | 2026-11-24 | M | Medium | #34 | Done (PR [#87](https://github.com/Minprez-JP/Plantjes/pull/87), `4d60b92`) |
+| [#93](https://github.com/Minprez-JP/Plantjes/issues/93) | Compact mobile collection browse and native-quality dialogs | M2 | Mobile M2 | 2026-11-25 | 2026-11-25 | M | Medium | #38, #84 | In progress |
 
 ## Work breakdown by phase
 

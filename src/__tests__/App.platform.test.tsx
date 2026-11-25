@@ -161,6 +161,26 @@ describe('App platform shell', () => {
     expect(screen.queryByText('Monstera')).toBeNull()
   })
 
+  it('shows compact mobile browse rows and expands them into full plant cards', () => {
+    vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
+    render(<App />)
+
+    const monsteraToggle = screen.getByRole('button', { name: /monstera\s*water today/i })
+    expect(monsteraToggle.getAttribute('aria-expanded')).toBe('false')
+    expect(screen.getByText('Water today')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /edit monstera/i })).toBeNull()
+
+    fireEvent.click(monsteraToggle)
+
+    const expandedToggle = screen.getByRole('button', { name: /monstera\s*water today/i })
+    expect(expandedToggle.getAttribute('aria-expanded')).toBe('true')
+    expect(screen.getByRole('button', { name: /edit monstera/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /add note for monstera/i })).toBeTruthy()
+
+    fireEvent.click(expandedToggle)
+    expect(screen.getByRole('button', { name: /monstera\s*water today/i }).getAttribute('aria-expanded')).toBe('false')
+  })
+
   it('keeps the compact collection toolbar free of bulk watering controls', () => {
     vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
     render(<App />)

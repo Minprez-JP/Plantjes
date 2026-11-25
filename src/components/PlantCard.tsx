@@ -42,6 +42,8 @@ interface PlantCardProps {
   onEditCare: (plant: Plant) => void
   onOpenNote: (plant: Plant) => void
   onDelete: (plant: Plant) => void
+  /** Mobile browse rows morph their own hero image; hide the duplicate photo. */
+  showPhoto?: boolean
 }
 
 export const PlantCard = memo(function PlantCard({
@@ -54,14 +56,23 @@ export const PlantCard = memo(function PlantCard({
   onEditCare,
   onOpenNote,
   onDelete,
+  showPhoto = true,
 }: PlantCardProps) {
   const storedImageUrl = useObjectUrl(plant.imageBlob)
   const isDue = daysLeft <= 0
   const feedDue = fertilizerDaysLeft !== null && fertilizerDaysLeft <= 0
-  const image = storedImageUrl || FALLBACK_PLANT_IMAGE
+  const safePhotoUrl = storedImageUrl.startsWith('blob:') ? storedImageUrl : FALLBACK_PLANT_IMAGE
   const plantPhoto = (
-    // False positive (see issue #24 and the SECURITY_TESTING.md suppression log): React escapes JSX attributes and useObjectUrl only returns opaque same-origin blob: URLs, which image sources cannot execute. Review by 2027-02-18.
-    <img className="plant-photo-image" src={image} alt="" loading="lazy" decoding="async" />
+    // Defense in depth: only opaque same-origin blob: URLs or the bundled fallback are assigned.
+    <img
+      className="plant-photo-image"
+      ref={(node) => {
+        if (node) node.src = safePhotoUrl
+      }}
+      alt=""
+      loading="lazy"
+      decoding="async"
+    />
   )
   const temperature = formatTemperatureRange(plant.minTemperature, plant.maxTemperature)
   const humidity = formatHumidity(plant.minHumidity, plant.maxHumidity)
@@ -69,45 +80,62 @@ export const PlantCard = memo(function PlantCard({
   const hasNote = hasStoredNote(plant.notes)
   const lastWatered = formatLastWatered(plant.lastWateredAt)
 
-  return (
-    <article className="plant-card">
-      <div className="plant-photo">
-        {plantPhoto}
-        <span className={isDue ? 'plant-status status-due' : 'plant-status'}>
-          <span />{isDue ? 'Needs water' : formatDue(daysLeft)}
-        </span>
-        <div className="card-actions">
-          <button title={`Edit ${plant.name}`} aria-label={`Edit ${plant.name}`} onClick={() => onEdit(plant)}>
-            <Pencil size={14} />
-          </button>
-          <button title={`Remove ${plant.name}`} aria-label={`Remove ${plant.name}`} onClick={() => onDelete(plant)}>
-            <Trash2 size={14} />
-          </button>
-        </div>
+  const status = (
+    <span className={isDue ? 'plant-status status-due' : 'plant-status'}>
+      <span />{isDue ? 'Needs water' : formatDue(daysLeft)}
+    </span>
+  )
+
+  const actions = (
+    <>
+      <div className="card-actions">
+        <button title={`Edit ${plant.name}`} aria-label={`Edit ${plant.name}`} onClick={() => onEdit(plant)}>
+          <Pencil size={14} />
+        </button>
+        <button title={`Remove ${plant.name}`} aria-label={`Remove ${plant.name}`} onClick={() => onDelete(plant)}>
+          <Trash2 size={14} />
+        </button>
+      </div>
+      <button
+        type="button"
+        className={hasNote ? 'note-action has-note' : 'note-action'}
+        title={hasNote ? `View note for ${plant.name}` : `Add note for ${plant.name}`}
+        aria-label={hasNote ? `View note for ${plant.name}` : `Add note for ${plant.name}`}
+        aria-haspopup="dialog"
+        onClick={() => onOpenNote(plant)}
+      >
+        <Info size={15} aria-hidden />
+        {hasNote && <span className="note-action-dot" aria-hidden />}
+      </button>
+      {plant.pruningTime?.trim() && (
         <button
           type="button"
-          className={hasNote ? 'note-action has-note' : 'note-action'}
-          title={hasNote ? `View note for ${plant.name}` : `Add note for ${plant.name}`}
-          aria-label={hasNote ? `View note for ${plant.name}` : `Add note for ${plant.name}`}
+          className="care-action"
+          title={`View pruning details for ${plant.name}`}
+          aria-label={`View pruning details for ${plant.name}`}
           aria-haspopup="dialog"
-          onClick={() => onOpenNote(plant)}
+          onClick={() => onEditCare(plant)}
         >
-          <Info size={15} aria-hidden />
-          {hasNote && <span className="note-action-dot" aria-hidden />}
+          <Scissors size={14} aria-hidden />
         </button>
-        {plant.pruningTime?.trim() && (
-          <button
-            type="button"
-            className="care-action"
-            title={`View pruning details for ${plant.name}`}
-            aria-label={`View pruning details for ${plant.name}`}
-            aria-haspopup="dialog"
-            onClick={() => onEditCare(plant)}
-          >
-            <Scissors size={14} aria-hidden />
-          </button>
-        )}
-      </div>
+      )}
+    </>
+  )
+
+  return (
+    <article className="plant-card">
+      {showPhoto ? (
+        <div className="plant-photo">
+          {plantPhoto}
+          {status}
+          {actions}
+        </div>
+      ) : (
+        <div className="plant-card-inline-head">
+          {status}
+          <div className="plant-card-inline-actions">{actions}</div>
+        </div>
+      )}
 
       <div className="plant-card-body">
         <div className="plant-title-row">

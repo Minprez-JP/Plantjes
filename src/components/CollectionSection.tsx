@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Droplets, Plus, Search, SlidersHorizontal, X } from 'lucide-react'
-import { CARE_FILTERS } from '../lib/constants'
+import { ChevronDown, Droplets, Plus, Search, SlidersHorizontal, X } from 'lucide-react'
+import { CARE_FILTERS, FALLBACK_PLANT_IMAGE } from '../lib/constants'
+import { formatDue } from '../lib/dates'
+import { useObjectUrl } from '../hooks/useObjectUrl'
 import { filterPlantRows, isWateringDue, listPlantLocations } from '../lib/plants'
 import type { CareFilter, Filter, PlantFilters, PlantRow } from '../types'
 import type { Plant } from '../db'
@@ -51,6 +53,7 @@ export function CollectionSection({
   const [query, setQuery] = useState('')
   const [careNotice, setCareNotice] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [expandedId, setExpandedId] = useState<number | undefined>()
 
   const locationOptions = useMemo<FilterSelectOption[]>(() => [
     ANY_LOCATION,
@@ -77,6 +80,12 @@ export function CollectionSection({
     () => visibleRows.filter(isWateringDue).length,
     [visibleRows],
   )
+
+  useEffect(() => {
+    if (expandedId === undefined) return
+    if (visibleRows.some(({ plant }) => plant.id === expandedId)) return
+    setExpandedId(undefined)
+  }, [expandedId, visibleRows])
 
   const activeFilterCount = [
     filter !== 'All plants',
@@ -282,21 +291,40 @@ export function CollectionSection({
           </div>
         )
       ) : (
-        <div className="plant-grid">
-          {visibleRows.map(({ plant, daysLeft, fertilizerDaysLeft }) => (
-            <PlantCard
-              key={plant.id}
-              plant={plant}
-              daysLeft={daysLeft}
-              fertilizerDaysLeft={fertilizerDaysLeft}
-              onWater={onWater}
-              onFertilize={onFertilize}
-              onEdit={onEdit}
-              onEditCare={onEditCare}
-              onOpenNote={onOpenNote}
-              onDelete={onDelete}
-            />
-          ))}
+        <div className={mobile ? 'plant-grid mobile-plant-browse' : 'plant-grid'}>
+          {visibleRows.map(({ plant, daysLeft, fertilizerDaysLeft }) =>
+            mobile ? (
+              <MobilePlantBrowseRow
+                key={plant.id}
+                plant={plant}
+                daysLeft={daysLeft}
+                fertilizerDaysLeft={fertilizerDaysLeft}
+                expanded={expandedId === plant.id}
+                onToggle={() =>
+                  setExpandedId((current) => (current === plant.id ? undefined : plant.id))
+                }
+                onWater={onWater}
+                onFertilize={onFertilize}
+                onEdit={onEdit}
+                onEditCare={onEditCare}
+                onOpenNote={onOpenNote}
+                onDelete={onDelete}
+              />
+            ) : (
+              <PlantCard
+                key={plant.id}
+                plant={plant}
+                daysLeft={daysLeft}
+                fertilizerDaysLeft={fertilizerDaysLeft}
+                onWater={onWater}
+                onFertilize={onFertilize}
+                onEdit={onEdit}
+                onEditCare={onEditCare}
+                onOpenNote={onOpenNote}
+                onDelete={onDelete}
+              />
+            ),
+          )}
         </div>
       )}
 
@@ -379,5 +407,93 @@ export function CollectionSection({
         </div>
       )}
     </section>
+  )
+}
+
+interface MobilePlantBrowseRowProps {
+  plant: Plant
+  daysLeft: number
+  fertilizerDaysLeft: number | null
+  expanded: boolean
+  onToggle: () => void
+  onWater: (plant: Plant) => void
+  onFertilize: (plant: Plant) => void
+  onEdit: (plant: Plant) => void
+  onEditCare: (plant: Plant) => void
+  onOpenNote: (plant: Plant) => void
+  onDelete: (plant: Plant) => void
+}
+
+function MobilePlantBrowseRow({
+  plant,
+  daysLeft,
+  fertilizerDaysLeft,
+  expanded,
+  onToggle,
+  onWater,
+  onFertilize,
+  onEdit,
+  onEditCare,
+  onOpenNote,
+  onDelete,
+}: MobilePlantBrowseRowProps) {
+  const photoUrl = useObjectUrl(plant.imageBlob)
+  const safePhotoUrl = photoUrl.startsWith('blob:') ? photoUrl : FALLBACK_PLANT_IMAGE
+  const due = daysLeft <= 0
+  const detailId = `mobile-plant-detail-${plant.id ?? plant.name}`
+
+  return (
+    <article className={expanded ? 'mobile-plant-row is-expanded' : 'mobile-plant-row'}>
+      <button
+        type="button"
+        className="mobile-plant-row-toggle"
+        aria-expanded={expanded}
+        aria-controls={detailId}
+        onClick={onToggle}
+      >
+        <img
+          className="mobile-plant-row-photo"
+          ref={(node) => {
+            if (node) node.src = safePhotoUrl
+          }}
+          alt=""
+          aria-hidden="true"
+        />
+        <span className="mobile-plant-row-copy">
+          <span className="mobile-plant-row-name">{plant.name}</span>
+          <span className={due ? 'mobile-plant-row-due is-due' : 'mobile-plant-row-due'}>
+            <Droplets size={14} aria-hidden="true" />
+            <span>{formatDue(daysLeft)}</span>
+          </span>
+        </span>
+        <ChevronDown
+          size={20}
+          className={expanded ? 'mobile-plant-row-chevron is-expanded' : 'mobile-plant-row-chevron'}
+          aria-hidden="true"
+        />
+      </button>
+
+      <div
+        id={detailId}
+        className="mobile-plant-row-detail"
+        hidden={!expanded}
+        aria-hidden={!expanded}
+      >
+        {expanded && (
+          <PlantCard
+            plant={plant}
+            daysLeft={daysLeft}
+            fertilizerDaysLeft={fertilizerDaysLeft}
+            onWater={onWater}
+            onFertilize={onFertilize}
+            onEdit={onEdit}
+            onEditCare={onEditCare}
+            onOpenNote={onOpenNote}
+            onDelete={onDelete}
+            showPhoto={false}
+          />
+        )}
+      </div>
+    </article>
   )
 }

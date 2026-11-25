@@ -1,10 +1,10 @@
 {
   "policyVersion": 1,
   "reviewedBy": "Minprez-JP",
-  "reviewedOn": "2026-11-23",
+  "reviewedOn": "2026-11-25",
   "generatedWith": "Node 26.13.0 / npm 11.20.0",
-  "lockfileSha256": "3407a37b53da855ec3fe4e067ed58a0f32e8d91be16bfd30791aca9e7d402a29",
+  "lockfileSha256": "fd6a0c9e7990344bb879e731c6772f6120e723b816a3217505157f29be11f8ce",
   "packageListSha256": "a66acc29936b1ed92012210760b78488fdab4dfc24626df0d4c81764b450148a",
   "packageCount": 432,
-  "note": "Reviewed baseline for the v1.2.1 Android icon pre-release on 2026-11-23. Capacitor versions remain pinned at 8.6.2; only the package version changed from 1.2.0 to 1.2.1, so the dependency set is unchanged. Lockfile hash is computed on LF-normalized content so Windows and Linux agree. Any future dependency or version change requires a reviewed PR."
+  "note": "Reviewed baseline for the v1.2.2 Android pre-release on 2026-11-25. Only the package/app version changed from 1.2.1 to 1.2.2 for mobile UX fixes; dependency set is unchanged. Lockfile hash is computed on LF-normalized content so Windows and Linux agree. Any future dependency or version change requires a reviewed PR."
 }
