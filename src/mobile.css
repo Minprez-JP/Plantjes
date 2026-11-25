@@ -341,11 +341,12 @@
 }
 
 .mobile-plant-row {
-  overflow: hidden;
+  overflow: clip;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 18px;
   box-shadow: var(--shadow-card);
+  transition: border-color var(--transition, 160ms ease), box-shadow var(--transition, 160ms ease);
 }
 
 .mobile-plant-row.is-expanded {
@@ -358,31 +359,61 @@
   min-height: 88px;
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr) 44px;
+  grid-template-areas: "photo copy chevron";
   align-items: center;
   gap: 14px;
-  padding: 12px 12px 12px 12px;
+  padding: 12px;
   color: inherit;
   background: transparent;
   border: 0;
   text-align: left;
+  transition: background-color var(--transition, 160ms ease);
 }
 
 .mobile-plant-row-toggle:active {
   background: var(--green-tint);
 }
 
+.mobile-plant-row.is-expanded .mobile-plant-row-toggle {
+  grid-template-columns: minmax(0, 1fr) 44px;
+  grid-template-areas:
+    "photo photo"
+    "copy chevron";
+  align-items: end;
+  gap: 12px;
+  padding: 0 12px 12px;
+}
+
 .mobile-plant-row-photo {
+  grid-area: photo;
   width: 72px;
   height: 72px;
   object-fit: cover;
   background: var(--green-soft);
   border-radius: 14px;
+  transition:
+    width 240ms cubic-bezier(.2, .8, .2, 1),
+    height 240ms cubic-bezier(.2, .8, .2, 1),
+    border-radius 240ms cubic-bezier(.2, .8, .2, 1),
+    margin 240ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.mobile-plant-row.is-expanded .mobile-plant-row-photo {
+  width: calc(100% + 24px);
+  height: 220px;
+  margin: 0 -12px;
+  border-radius: 0;
 }
 
 .mobile-plant-row-copy {
+  grid-area: copy;
   min-width: 0;
   display: grid;
   gap: 6px;
+}
+
+.mobile-plant-row.is-expanded .mobile-plant-row-copy {
+  padding-inline-start: 2px;
 }
 
 .mobile-plant-row-name {
@@ -411,14 +442,19 @@
 }
 
 .mobile-plant-row-chevron {
+  grid-area: chevron;
   justify-self: center;
   color: var(--text-subtle);
-  transition: transform 160ms ease;
+  transition: transform 180ms ease, color 180ms ease;
 }
 
 .mobile-plant-row-chevron.is-expanded {
   color: var(--green);
   transform: rotate(180deg);
+}
+
+.mobile-plant-row-detail[hidden] {
+  display: none;
 }
 
 .mobile-plant-row-detail {
@@ -434,13 +470,46 @@
   background: transparent;
 }
 
+/* The compact row photo morphs into the expanded hero; hide PlantCard's duplicate photo. */
 .mobile-plant-row-detail .plant-photo {
-  height: 200px;
-  border-radius: 14px;
+  display: none;
 }
 
 .mobile-plant-row-detail .plant-card-body {
-  padding: var(--space-4) 0 0;
+  padding: var(--space-2) 0 0;
+}
+
+.mobile-plant-row-detail .plant-card-inline-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block-start: var(--space-2);
+}
+
+.mobile-plant-row-detail .plant-card-inline-head .plant-status {
+  position: static;
+  flex: 0 0 auto;
+}
+
+.mobile-plant-row-detail .plant-card-inline-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
+}
+
+.mobile-plant-row-detail .plant-card-inline-actions .card-actions {
+  position: static;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.mobile-plant-row-detail .plant-card-inline-actions .note-action,
+.mobile-plant-row-detail .plant-card-inline-actions .care-action,
+.mobile-plant-row-detail .plant-card-inline-actions .card-actions button {
+  position: static;
+  inset: auto;
 }
 
 .mobile-plant-row-detail .plant-card-footer {
@@ -1020,7 +1089,12 @@
 @media (prefers-reduced-motion: reduce) {
   .mobile-main > section,
   .mobile-shell .dialog-backdrop,
-  .mobile-shell .plant-dialog {
+  .mobile-shell .plant-dialog,
+  .mobile-plant-row,
+  .mobile-plant-row-toggle,
+  .mobile-plant-row-photo,
+  .mobile-plant-row-chevron {
     animation: none;
+    transition: none;
   }
 }

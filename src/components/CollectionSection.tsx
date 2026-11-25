@@ -470,8 +470,13 @@ function MobilePlantBrowseRow({
         />
       </button>
 
-      {expanded && (
-        <div id={detailId} className="mobile-plant-row-detail">
+      <div
+        id={detailId}
+        className="mobile-plant-row-detail"
+        hidden={!expanded}
+        aria-hidden={!expanded}
+      >
+        {expanded && (
           <PlantCard
             plant={plant}
             daysLeft={daysLeft}
@@ -482,9 +487,10 @@ function MobilePlantBrowseRow({
             onEditCare={onEditCare}
             onOpenNote={onOpenNote}
             onDelete={onDelete}
+            showPhoto={false}
           />
-        </div>
-      )}
+        )}
+      </div>
     </article>
   )
 }
