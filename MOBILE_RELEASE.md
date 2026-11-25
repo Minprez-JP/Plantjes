@@ -1,6 +1,6 @@
 # Plantjes mobile APK release
 
-Status: **M1 go — scaffold merged; v1.2.1 pre-release published; mobile-only UX merged (#84, PR #87); native mobile UX pass merged (#38, PR #89) with compact collection follow-up (PR #91)** (last updated 2026-11-24)
+Status: **M1 go — scaffold merged; v1.2.1 pre-release published; mobile-only UX merged (#84, PR #87); native mobile UX pass merged (#38, PR #89) with compact collection follow-up (PR #91); compact browse/dialog polish in progress (#93)** (last updated 2026-11-25)
 
 This is the canonical entry point for the local-run Android APK work. The shared React/Vite application lives on the protected `main` branch. The Capacitor `android/` scaffold is merged on `main` through #81/#34. Mobile work is done on short-lived topic branches and merged into `main`.
 
@@ -13,6 +13,7 @@ This is the canonical entry point for the local-run Android APK work. The shared
 - Merged mobile UX change: [PR #87 — Mobile-only navigation with collection, care and account screens (#84)](https://github.com/Minprez-JP/Plantjes/pull/87), squash commit [`4d60b92`](https://github.com/Minprez-JP/Plantjes/commit/4d60b9226a1bc1c6033432ba9c7f29befcdb17d0)
 - Merged native UX pass: [PR #89 — Native-feel UX pass for #38](https://github.com/Minprez-JP/Plantjes/pull/89), squash commit [`c3c2dff`](https://github.com/Minprez-JP/Plantjes/commit/c3c2dff). Acceptance screenshots are in [`docs/mobile-apk/screenshots/issue-38/`](./docs/mobile-apk/screenshots/issue-38/README.md).
 - Merged collection-density follow-up: [PR #91 — Compact collection toolbar for #38](https://github.com/Minprez-JP/Plantjes/pull/91), replacing the stacked desktop-style filters and bulk-watering panel with a search-first toolbar and a filter bottom sheet.
+- Active mobile UX polish: [Issue #93 — Compact mobile collection browse and native-quality dialogs](https://github.com/Minprez-JP/Plantjes/issues/93), adding compact browse rows with inline expansion and polishing shared mobile dialog/sheet touch quality.
 - Legacy branches: `archive/v2-mobile` and `archive/mobile-branch` are retained for history but are **not** active baselines. `archive/*` is read-only and delete-protected; fork the repository if you need to work on archived history.
 
 > M1 gate decision: **GO (engineering feasibility)**, recorded in #48 on 2026-11-23. Clean-checkout debug APKs were built, installed and published as the [v1.2.0](https://github.com/Minprez-JP/Plantjes/releases/tag/v1.2.0) and [v1.2.1](https://github.com/Minprez-JP/Plantjes/releases/tag/v1.2.1) pre-releases. The scaffold merged into `main` via #81 on 2026-11-23. The rolling `v1.2` tag points to the latest 1.2.x commit; per-release `v1.2.0`/`v1.2.1` tags remain immutable.
@@ -29,6 +30,7 @@ This is the canonical entry point for the local-run Android APK work. The shared
 | [Risk log](./docs/mobile-apk/risk-log.md) | Technical, privacy, security and schedule risks with mitigations |
 | [Sync log](./docs/mobile-apk/sync-log.md) | Record of the branch-model migration and platform-configuration changes |
 | [Issue #38 evidence](./docs/mobile-apk/screenshots/issue-38/README.md) | Viewport, safe-area, touch-target and screenshot evidence for the native UX pass |
+| [Issue #93 evidence](./docs/mobile-apk/screenshots/issue-93/README.md) | Compact collection browse rows, inline expansion, and dialog polish evidence |
 
 ## Phase summary
 
