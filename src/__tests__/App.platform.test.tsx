@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import App from '../App'
 import type { Plant } from '../db'
 import { usePlantJournal, type PlantJournal } from '../hooks/usePlantJournal'
@@ -161,8 +161,19 @@ describe('App platform shell', () => {
     expect(screen.queryByText('Monstera')).toBeNull()
   })
 
-  it('shows compact mobile browse rows and expands them into full plant cards', () => {
+  it('shows compact mobile browse rows, scrolls them into view, hides Add plant while expanded, and collapses after watering', async () => {
     vi.mocked(isNativeMobilePlatform).mockReturnValue(true)
+    const scrollTo = vi.fn()
+    Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
+      configurable: true,
+      value: scrollTo,
+    })
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      cb(0)
+      return 0
+    })
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {})
+
     render(<App />)
 
     const monsteraToggle = screen.getByRole('button', { name: /monstera\s*water today/i })
@@ -176,9 +187,16 @@ describe('App platform shell', () => {
     expect(expandedToggle.getAttribute('aria-expanded')).toBe('true')
     expect(screen.getByRole('button', { name: /edit monstera/i })).toBeTruthy()
     expect(screen.getByRole('button', { name: /add note for monstera/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /add plant/i })).toBeNull()
+    await waitFor(() => expect(scrollTo).toHaveBeenCalled())
 
-    fireEvent.click(expandedToggle)
-    expect(screen.getByRole('button', { name: /monstera\s*water today/i }).getAttribute('aria-expanded')).toBe('false')
+    const waterButtons = screen.getAllByRole('button', { name: /^water$/i })
+    const cardWaterButton = waterButtons.find((button) => button.classList.contains('water-button'))
+    expect(cardWaterButton).toBeTruthy()
+    fireEvent.click(cardWaterButton!)
+    expect(screen.getByRole('button', { name: /monstera/i }).getAttribute('aria-expanded')).toBe('false')
+    expect(screen.getByRole('button', { name: /add plant/i })).toBeTruthy()
+    vi.restoreAllMocks()
   })
 
   it('keeps the compact collection toolbar free of bulk watering controls', () => {

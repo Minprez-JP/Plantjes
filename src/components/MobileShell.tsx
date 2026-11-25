@@ -91,10 +91,12 @@ export function MobileShell({
   children,
 }: MobileShellProps) {
   const [screen, setScreen] = useState<MobileScreen>('collection')
+  const [expandedPlantId, setExpandedPlantId] = useState<number | undefined>()
 
   const selectScreen = useCallback((next: MobileScreen, mode: 'push' | 'replace' = 'push') => {
     writeMobileHash(next, mode)
     setScreen(next)
+    if (next !== 'collection') setExpandedPlantId(undefined)
   }, [])
 
   useEffect(() => {
@@ -173,6 +175,7 @@ export function MobileShell({
               onFertilize={onFertilize}
               onDelete={onDeletePlant}
               mobile
+              onExpandedPlantChange={setExpandedPlantId}
             />
           )}
 
@@ -204,7 +207,7 @@ export function MobileShell({
           )}
         </main>
 
-        {screen === 'collection' && (
+        {screen === 'collection' && expandedPlantId === undefined && (
           <button type="button" className="mobile-fab" onClick={onAddPlant}>
             <Plus size={22} aria-hidden="true" />
             <span>Add plant</span>

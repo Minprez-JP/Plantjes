@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, Droplets, Plus, Search, SlidersHorizontal, X } from 'lucide-react'
 import { CARE_FILTERS, FALLBACK_PLANT_IMAGE } from '../lib/constants'
 import { formatDue } from '../lib/dates'
@@ -31,6 +31,8 @@ interface CollectionSectionProps {
   onDelete: (plant: Plant) => void
   /** The mobile shell uses a denser, bottom-sheet based toolbar. */
   mobile?: boolean
+  /** Reports which mobile browse row is expanded so the shell can adapt chrome. */
+  onExpandedPlantChange?: (plantId: number | undefined) => void
 }
 
 export function CollectionSection({
@@ -46,6 +48,7 @@ export function CollectionSection({
   onFertilize,
   onDelete,
   mobile = false,
+  onExpandedPlantChange,
 }: CollectionSectionProps) {
   const [filter, setFilter] = useState<Filter>('All plants')
   const [location, setLocation] = useState('')
@@ -54,6 +57,7 @@ export function CollectionSection({
   const [careNotice, setCareNotice] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [expandedId, setExpandedId] = useState<number | undefined>()
+  const mobileRowRefs = useRef(new Map<number, HTMLElement>())
 
   const locationOptions = useMemo<FilterSelectOption[]>(() => [
     ANY_LOCATION,
@@ -86,6 +90,44 @@ export function CollectionSection({
     if (visibleRows.some(({ plant }) => plant.id === expandedId)) return
     setExpandedId(undefined)
   }, [expandedId, visibleRows])
+
+  useEffect(() => {
+    onExpandedPlantChange?.(expandedId)
+  }, [expandedId, onExpandedPlantChange])
+
+  useEffect(() => {
+    if (!mobile || expandedId === undefined) return
+
+    const row = mobileRowRefs.current.get(expandedId)
+    const scroller = row?.closest<HTMLElement>('.mobile-main')
+    if (!row || !scroller) return
+
+    const frame = window.requestAnimationFrame(() => {
+      const stickyTools = scroller.querySelector<HTMLElement>('.mobile-collection-tools')
+      const stickyBottom = stickyTools
+        ? stickyTools.getBoundingClientRect().bottom - scroller.getBoundingClientRect().top
+        : 0
+      const top = row.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop
+      const nextTop = Math.max(0, top - stickyBottom - 8)
+      const reduceMotion = typeof window.matchMedia === 'function'
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (typeof scroller.scrollTo === 'function') {
+        scroller.scrollTo({
+          top: nextTop,
+          behavior: reduceMotion ? 'auto' : 'smooth',
+        })
+      } else {
+        scroller.scrollTop = nextTop
+      }
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [expandedId, mobile])
+
+  const handleMobileWater = useCallback((plant: Plant) => {
+    if (plant.id !== undefined) setExpandedId((current) => (current === plant.id ? undefined : current))
+    onWater(plant)
+  }, [onWater])
 
   const activeFilterCount = [
     filter !== 'All plants',
@@ -303,12 +345,17 @@ export function CollectionSection({
                 onToggle={() =>
                   setExpandedId((current) => (current === plant.id ? undefined : plant.id))
                 }
-                onWater={onWater}
+                onWater={handleMobileWater}
                 onFertilize={onFertilize}
                 onEdit={onEdit}
                 onEditCare={onEditCare}
                 onOpenNote={onOpenNote}
                 onDelete={onDelete}
+                rowRef={(node) => {
+                  if (plant.id === undefined) return
+                  if (node) mobileRowRefs.current.set(plant.id, node)
+                  else mobileRowRefs.current.delete(plant.id)
+                }}
               />
             ) : (
               <PlantCard
@@ -422,6 +469,7 @@ interface MobilePlantBrowseRowProps {
   onEditCare: (plant: Plant) => void
   onOpenNote: (plant: Plant) => void
   onDelete: (plant: Plant) => void
+  rowRef: (node: HTMLElement | null) => void
 }
 
 function MobilePlantBrowseRow({
@@ -436,6 +484,7 @@ function MobilePlantBrowseRow({
   onEditCare,
   onOpenNote,
   onDelete,
+  rowRef,
 }: MobilePlantBrowseRowProps) {
   const photoUrl = useObjectUrl(plant.imageBlob)
   const safePhotoUrl = photoUrl.startsWith('blob:') ? photoUrl : FALLBACK_PLANT_IMAGE
@@ -443,7 +492,10 @@ function MobilePlantBrowseRow({
   const detailId = `mobile-plant-detail-${plant.id ?? plant.name}`
 
   return (
-    <article className={expanded ? 'mobile-plant-row is-expanded' : 'mobile-plant-row'}>
+    <article
+      ref={rowRef}
+      className={expanded ? 'mobile-plant-row is-expanded' : 'mobile-plant-row'}
+    >
       <button
         type="button"
         className="mobile-plant-row-toggle"
