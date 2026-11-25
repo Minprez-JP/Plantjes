@@ -453,7 +453,9 @@ function MobilePlantBrowseRow({
       >
         <img
           className="mobile-plant-row-photo"
-          src={safePhotoUrl}
+          ref={(node) => {
+            if (node) node.src = safePhotoUrl
+          }}
           alt=""
           aria-hidden="true"
         />

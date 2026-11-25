@@ -63,8 +63,16 @@ export const PlantCard = memo(function PlantCard({
   const feedDue = fertilizerDaysLeft !== null && fertilizerDaysLeft <= 0
   const safePhotoUrl = storedImageUrl.startsWith('blob:') ? storedImageUrl : FALLBACK_PLANT_IMAGE
   const plantPhoto = (
-    // Defense in depth: React escapes attributes and useObjectUrl only returns opaque same-origin blob: URLs.
-    <img className="plant-photo-image" src={safePhotoUrl} alt="" loading="lazy" decoding="async" />
+    // Defense in depth: only opaque same-origin blob: URLs or the bundled fallback are assigned.
+    <img
+      className="plant-photo-image"
+      ref={(node) => {
+        if (node) node.src = safePhotoUrl
+      }}
+      alt=""
+      loading="lazy"
+      decoding="async"
+    />
   )
   const temperature = formatTemperatureRange(plant.minTemperature, plant.maxTemperature)
   const humidity = formatHumidity(plant.minHumidity, plant.maxHumidity)
