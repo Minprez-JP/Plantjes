@@ -61,10 +61,10 @@ export const PlantCard = memo(function PlantCard({
   const storedImageUrl = useObjectUrl(plant.imageBlob)
   const isDue = daysLeft <= 0
   const feedDue = fertilizerDaysLeft !== null && fertilizerDaysLeft <= 0
-  const image = storedImageUrl || FALLBACK_PLANT_IMAGE
+  const safePhotoUrl = storedImageUrl.startsWith('blob:') ? storedImageUrl : FALLBACK_PLANT_IMAGE
   const plantPhoto = (
-    // False positive (see issue #24 and the SECURITY_TESTING.md suppression log): React escapes JSX attributes and useObjectUrl only returns opaque same-origin blob: URLs, which image sources cannot execute. Review by 2027-02-18.
-    <img className="plant-photo-image" src={image} alt="" loading="lazy" decoding="async" />
+    // Defense in depth: React escapes attributes and useObjectUrl only returns opaque same-origin blob: URLs.
+    <img className="plant-photo-image" src={safePhotoUrl} alt="" loading="lazy" decoding="async" />
   )
   const temperature = formatTemperatureRange(plant.minTemperature, plant.maxTemperature)
   const humidity = formatHumidity(plant.minHumidity, plant.maxHumidity)

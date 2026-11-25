@@ -452,7 +452,7 @@ function MobilePlantBrowseRow({
       >
         <img
           className="mobile-plant-row-photo"
-          src={photoUrl || FALLBACK_PLANT_IMAGE}
+          src={photoUrl.startsWith('blob:') ? photoUrl : FALLBACK_PLANT_IMAGE}
           alt=""
           aria-hidden="true"
         />
