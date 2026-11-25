@@ -30,12 +30,12 @@ jobs:
           node-version: 26
           cache: npm
 
-      # `npm ci` installs exactly the committed lockfile, so a reviewed
-      # dependency graph is what gets audited and built.
+      # `npm ci` installs exactly the committed lockfile, so the dependency
+      # graph in the PR is what gets audited and built.
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify reproducible install
+      - name: Verify install integrity
         run: |
           git diff --exit-code -- package-lock.json
           npm run verify:install
