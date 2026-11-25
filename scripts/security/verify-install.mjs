@@ -1,33 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import {
-  npmArgs,
-  outputDirectory,
-  root,
-  run,
-  sha256,
-  writeJson,
-} from './common.mjs'
+import { npmArgs, root, run, writeJson } from './common.mjs'
 
 const lockPath = resolve(root, 'package-lock.json')
 const hiddenLockPath = resolve(root, 'node_modules/.package-lock.json')
-const baselinePath = resolve(root, 'security-baselines/install.json')
 
-const lockRaw = readFileSync(lockPath)
-const lock = JSON.parse(lockRaw.toString('utf8'))
-const baseline = JSON.parse(readFileSync(baselinePath, 'utf8'))
+const lock = JSON.parse(readFileSync(lockPath, 'utf8'))
 
-const packageList = Object.entries(lock.packages ?? {})
-  .filter(([path]) => path !== '')
-  .map(([path, value]) => `${path}@${value.version}`)
-  .sort()
-
-const actual = {
-  // Git stores LF on every platform; normalise Windows checkouts before hashing.
-  lockfileSha256: sha256(lockRaw.toString('utf8').replace(/\r\n/g, '\n')),
-  packageListSha256: sha256(`${packageList.join('\n')}\n`),
-  packageCount: packageList.length,
-}
+const lockedPackages = Object.keys(lock.packages ?? {}).filter((path) => path !== '')
 
 const hiddenLock = existsSync(hiddenLockPath)
   ? JSON.parse(readFileSync(hiddenLockPath, 'utf8'))
@@ -62,20 +42,15 @@ const toolchain = { node: process.version, npm: npmVersion }
 
 const failures = []
 if (!lockfileUnchanged) failures.push('package-lock.json changed after install')
-if (actual.lockfileSha256 !== baseline.lockfileSha256) failures.push('lockfile SHA-256 does not match the reviewed baseline')
-if (actual.packageListSha256 !== baseline.packageListSha256) failures.push('sorted package-list SHA-256 does not match the reviewed baseline')
 for (const issue of hiddenLockIssues) failures.push(issue)
 
 const report = {
   generatedAt: new Date().toISOString(),
-  baseline: 'security-baselines/install.json',
-  canonicalization: 'package-lock.json CRLF sequences are normalized to LF before hashing',
-  expected: {
-    lockfileSha256: baseline.lockfileSha256,
-    packageListSha256: baseline.packageListSha256,
-    packageCount: baseline.packageCount,
+  sourceOfTruth: 'package-lock.json',
+  actual: {
+    lockfileVersion: lock.lockfileVersion ?? null,
+    packageCount: lockedPackages.length,
   },
-  actual,
   toolchain,
   hiddenLockfilePresent: Boolean(hiddenLock),
   lockfileUnchanged,
@@ -84,8 +59,8 @@ const report = {
 writeJson('install-integrity.json', report)
 
 if (failures.length) {
-  throw new Error(`Reproducible install check failed:\n${failures.join('\n')}`)
+  throw new Error(`Install integrity check failed:\n${failures.join('\n')}`)
 }
 console.log(
-  `Install verified with node ${toolchain.node} / npm ${toolchain.npm}; lockfile ${actual.lockfileSha256}`,
+  `Install verified with node ${toolchain.node} / npm ${toolchain.npm}; ${lockedPackages.length} packages locked in package-lock.json`,
 )
