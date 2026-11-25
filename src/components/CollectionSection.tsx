@@ -438,6 +438,7 @@ function MobilePlantBrowseRow({
   onDelete,
 }: MobilePlantBrowseRowProps) {
   const photoUrl = useObjectUrl(plant.imageBlob)
+  const safePhotoUrl = photoUrl.startsWith('blob:') ? photoUrl : FALLBACK_PLANT_IMAGE
   const due = daysLeft <= 0
   const detailId = `mobile-plant-detail-${plant.id ?? plant.name}`
 
@@ -452,7 +453,7 @@ function MobilePlantBrowseRow({
       >
         <img
           className="mobile-plant-row-photo"
-          src={photoUrl.startsWith('blob:') ? photoUrl : FALLBACK_PLANT_IMAGE}
+          src={safePhotoUrl}
           alt=""
           aria-hidden="true"
         />
